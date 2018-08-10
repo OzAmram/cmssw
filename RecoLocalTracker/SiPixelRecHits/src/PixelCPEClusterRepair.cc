@@ -211,6 +211,9 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    float clustMatrix[mrow][mcol];
    float clustMatrix2[mrow][mcol];
 
+
+   float localx_1d(0.), localy_1d(0.);
+
    //--- Prepare struct that passes pointers to TemplateReco.  It doesn't own anything.
    SiPixelTemplateReco::ClusMatrix   clusterPayload  { &clustMatrix[0][0], xdouble, ydouble, mrow,mcol};
    SiPixelTemplateReco2D::ClusMatrix clusterPayload2d{ &clustMatrix2[0][0], xdouble, ydouble, mrow,mcol};
@@ -268,6 +271,8 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        
 
        //--- Call the Template Reco 2d with cluster repair
+       localx_1d = theClusterParam.templXrec_;
+       localy_1d = theClusterParam.templYrec_;
        callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
        filled_from_2d = true;
      }
@@ -294,6 +299,14 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
 
    
+   printf("123CRTEST456: fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
+           0, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
+   printf("Local X, Local Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+   if(filled_from_2d && !theClusterParam.isOnEdge_)
+        printf("1D: X,Y = %.5f, %.5f \n",localx_1d, localy_1d);
+   else
+        printf("1D: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+   printf("CR: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
    return LocalPoint( theClusterParam.templXrec_, theClusterParam.templYrec_ );
 }
 
