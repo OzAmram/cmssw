@@ -22,6 +22,9 @@
 
 #include <iostream>
 
+#include "TFile.h"
+#include "TTree.h"
+
 using namespace SiPixelTemplateReco;
 //using namespace SiPixelTemplateSplit;
 using namespace std;
@@ -228,7 +231,10 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
       int icol = int(pix.y) - col_offset;
       // &&& Do we ever get pixels that are out of bounds ???  Need to check.
       if ( (irow<mrow) & (icol<mcol) ) clustMatrix[irow][icol] =  float(pix.adc);
+      if ( (icol==mcol-1) ) clustMatrix[irow][icol] = 0;
+      if ( (icol==mcol-2) ) clustMatrix[irow][icol] = 0;
    }
+
    // &&& Save for later: fillClustMatrix( float * clustMatrix );
 
    //--- Save a copy of clustMatrix into clustMatrix2
