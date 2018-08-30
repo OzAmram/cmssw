@@ -217,6 +217,8 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
    float localx_1d(0.), localy_1d(0.);
 
+   int fail_mode = 0;
+
    //--- Prepare struct that passes pointers to TemplateReco.  It doesn't own anything.
    SiPixelTemplateReco::ClusMatrix   clusterPayload  { &clustMatrix[0][0], xdouble, ydouble, mrow,mcol};
    SiPixelTemplateReco2D::ClusMatrix clusterPayload2d{ &clustMatrix2[0][0], xdouble, ydouble, mrow,mcol};
@@ -226,13 +228,29 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    memset( clustMatrix, 0, sizeof(float)*mrow*mcol );   // Wipe it clean.
    for (int i=0 ; i!=theClusterParam.theCluster->size(); ++i )
    {
-      auto pix = theClusterParam.theCluster->pixel(i);
-      int irow = int(pix.x) - row_offset;
-      int icol = int(pix.y) - col_offset;
-      // &&& Do we ever get pixels that are out of bounds ???  Need to check.
-      if ( (irow<mrow) & (icol<mcol) ) clustMatrix[irow][icol] =  float(pix.adc);
-      if ( (icol==mcol-1) ) clustMatrix[irow][icol] = 0;
-      if ( (icol==mcol-2) ) clustMatrix[irow][icol] = 0;
+       auto pix = theClusterParam.theCluster->pixel(i);
+       int irow = int(pix.x) - row_offset;
+       int icol = int(pix.y) - col_offset;
+       // &&& Do we ever get pixels that are out of bounds ???  Need to check.
+       if ( (irow<mrow) & (icol<mcol) ) clustMatrix[irow][icol] =  float(pix.adc);
+
+       //kill pixels at start of cluster
+       if(col_offset %2 == 0){
+           //cluster starts at beginning of double column, kill first two cols
+           //if large enough
+           if ( (irow<mrow) && (icol<mcol) && (mcol > 2) && (icol ==0 || icol==1)){ 
+               clustMatrix[irow][icol] = 0;
+               fail_mode = 2;
+           }
+       }
+       else{
+           //cluster starts at 2nd pixel in a double column, kill only first col
+           //if large enough
+           if ( (irow<mrow) && (icol<mcol) && (mcol > 1) && (icol ==0)){ 
+               clustMatrix[irow][icol] = 0;
+               fail_mode = 1;
+           }
+       }
    }
 
    // &&& Save for later: fillClustMatrix( float * clustMatrix );
@@ -253,27 +271,14 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
    }
    else {
-     theClusterParam.recommended2D_ = false;
+     //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
+     theClusterParam.recommended2D_ = true;
 
      //--- Did we find a cluster which has bad probability and not enough charge?
-     if ( theClusterParam.recommended2D_ ) {
+     if ( theClusterParam.recommended2D_) {
        //--- Yes. So run Template Reco 2d with cluster repair.
-       
-       // //--- Once again (!) copy clust's pixels (calibrated in electrons) into 
-       // //    clustMatrix.  We need to do that because the vanilla template reco
-       // //    will modify the ADC counts in situ (during decapitation)
-       // memset( clustMatrix, 0, sizeof(float)*mrow*mcol );   // Wipe it clean.
-       // for (int i=0 ; i!=theClusterParam.theCluster->size(); ++i )
-       // 	 {
-       // 	   auto pix = theClusterParam.theCluster->pixel(i);
-       // 	   int irow = int(pix.x) - row_offset;
-       // 	   int icol = int(pix.y) - col_offset;
-       // 	   // &&& Do we ever get pixels that are out of bounds ???  Need to check.
-       // 	   if ( (irow<mrow) & (icol<mcol) ) clustMatrix[irow][icol] =  float(pix.adc);
-       // 	 }
-       // // fillClustMatrix( float * clustMatrix );
        
 
        //--- Call the Template Reco 2d with cluster repair
@@ -306,7 +311,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
    
    printf("123CRTEST456: fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
-           0, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
+           fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
    printf("Local X, Local Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
    if(filled_from_2d && !theClusterParam.isOnEdge_)
         printf("1D: X,Y = %.5f, %.5f \n",localx_1d, localy_1d);
@@ -399,8 +404,36 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       theClusterParam.hasFilledProb_ = true;
 
       //--- templ.clsleny() is the expected length of the cluster along y axis.
-      if ( (theClusterParam.probabilityY_ < minProbY_ ) && (templ.clsleny() - nypix > 1) ) {
-	theClusterParam.recommended2D_ = true;
+      //--- If the fit is poor and cluster is shorter than expected, possibly
+      //    due to truncated cluster, so try 2D reco
+      if ( ((theClusterParam.probabilityY_ < minProbY_ ) && (templ.clsleny() - nypix > 1)) || true ) {
+          theClusterParam.recommended2D_ = true;
+          // Truncated clusters usually come from stuck TBMs which kill entire
+          // double columns
+
+          // Cluster is of even length, so either both or neither ends, end on
+          // a double column, so we cannot figure out the likely edge of
+          // truncation, let the 2D algorithm try extending on both sides (option 3)
+          if(nypix % 2 == 0) theClusterParam.edgeTypeY_ = 3;
+
+          if(nypix %1 ==0){
+              //The cluster is of odd length, only one of the edges can end on
+              //a double column, this is the likely edge of truncation
+              //Double columns always start on even indexes
+
+              int min_col = theClusterParam.theCluster->minPixelCol();
+
+              if(min_col %2 ==0){
+                  //begining edge is at a double column (end edge cannot be,
+                  //because odd length) so likely truncated at small y (option 1) 
+                  theClusterParam.edgeTypeY_ = 1;
+              }
+              else{ 
+                  //begining edge not at a double column (end edge must be,
+                  //because odd length) so likely truncated at large y (option 2) 
+                  theClusterParam.edgeTypeY_ = 2;
+              }
+          }
       }
       
       //--- Go from microns to centimeters
@@ -457,13 +490,9 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    //   deltay - (output) template y-length - cluster length [when > 0, possibly missing end]
    //   npixels - ???     &&& Ask Morris
 
-   float edgeTypeY = theClusterParam.edgeTypeY_ ;  // the default, from PixelCPEBase
-   if ( theClusterParam.recommended2D_ ) {
-     //  Cluster is not on edge, but instead the normal TemplateReco discovered that it is
-     //  shorter than expected.  So let the 2D algorithm try extending it on both sides, in case
-     //  there is a dead double-column on either side.  (We don't know which.)
-     edgeTypeY = 3;
-   }
+   //edgeTypeY is either set by CPEBase for actual detector edges, or guessed
+   //by call1DReco when trying to fix dead double columns
+   float edgeTypeY = theClusterParam.edgeTypeY_ ;  
 
    float deltay = 0;    // return param
    int npixels = 0;     // return param
