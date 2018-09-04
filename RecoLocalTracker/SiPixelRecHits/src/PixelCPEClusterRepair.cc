@@ -252,6 +252,18 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
            }
        }
    }
+   bool has_added = false;
+   int nypix_calc =0;
+   for(int j=0; j<mcol; j++){
+       has_added = false;
+       for(int i=0; i<mrow; i++){
+           if(clustMatrix[i][j] > 0 && !has_added){
+               nypix_calc += 1+ int(ydouble[j]);
+               has_added = true;
+           }
+       }
+   }
+
 
    // &&& Save for later: fillClustMatrix( float * clustMatrix );
 
@@ -264,17 +276,20 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
 
 
+   printf("123CRTEST456 \n");
    //--- Are we on edge?
    if ( theClusterParam.isOnEdge_ ) {
      //--- Call the Template Reco 2d with cluster repair.0
      filled_from_2d = true;
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
+     printf("nydiff=%.2f proby1d=%.2e \n", 0., 0.);
    }
    else {
      //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
      theClusterParam.recommended2D_ = true;
+     //theClusterParam.edgeTypeY_ = 1;
 
      //--- Did we find a cluster which has bad probability and not enough charge?
      if ( theClusterParam.recommended2D_) {
@@ -309,8 +324,11 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    }
 
 
-   
-   printf("123CRTEST456: fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
+
+
+   //printf(" edgeTypeY_ is %i, mcol is %i, fail mode is %i, col_offis is %i nypix_calc is %i, templ_leny is %.2f \n", 
+           //theClusterParam.edgeTypeY_, mcol, fail_mode, col_offset, nypix_calc, templ.clsleny());
+   printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
            fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
    printf("Local X, Local Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
    if(filled_from_2d && !theClusterParam.isOnEdge_)
@@ -408,6 +426,7 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       //    due to truncated cluster, so try 2D reco
       if ( ((theClusterParam.probabilityY_ < minProbY_ ) && (templ.clsleny() - nypix > 1)) || true ) {
           theClusterParam.recommended2D_ = true;
+          printf("nydiff=%.2f proby1d=%.2e \n", templ.clsleny() - nypix, theClusterParam.probabilityY_);
           // Truncated clusters usually come from stuck TBMs which kill entire
           // double columns
 
@@ -416,20 +435,20 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
           // truncation, let the 2D algorithm try extending on both sides (option 3)
           if(nypix % 2 == 0) theClusterParam.edgeTypeY_ = 3;
 
-          if(nypix %1 ==0){
+          else{
               //The cluster is of odd length, only one of the edges can end on
               //a double column, this is the likely edge of truncation
               //Double columns always start on even indexes
 
-              int min_col = theClusterParam.theCluster->minPixelCol();
+              int max_col = theClusterParam.theCluster->maxPixelCol();
 
-              if(min_col %2 ==0){
+              if(max_col %2 ==0){
                   //begining edge is at a double column (end edge cannot be,
                   //because odd length) so likely truncated at small y (option 1) 
                   theClusterParam.edgeTypeY_ = 1;
               }
               else{ 
-                  //begining edge not at a double column (end edge must be,
+                  //end edge is at a double column (beginning edge cannot be,
                   //because odd length) so likely truncated at large y (option 2) 
                   theClusterParam.edgeTypeY_ = 2;
               }
@@ -519,6 +538,11 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
                        );
    }
    // ******************************************************************
+   if (isnan(theClusterParam.templXrec_) || isnan(theClusterParam.templYrec_)){
+       printf("NAN RETURNING FROM 2D!! \n");
+       printf("cotalpha, cotbeta = %.4f %.4f \n", theClusterParam.cotalpha, theClusterParam.cotbeta);
+   }
+
    
    //--- Check exit status
    if UNLIKELY( theClusterParam.ierr2 != 0 )
