@@ -640,6 +640,11 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id, float cotalpha, float cotbeta
       npixels = npixel;
       probQ = 0.f;
    }
+   /*
+   if(isnan(xrec) || isnan(yrec)){
+       printf("2D reco returning NaNs! \n");
+   }
+   */
    
    return 0;
 } // PixelTempReco2D

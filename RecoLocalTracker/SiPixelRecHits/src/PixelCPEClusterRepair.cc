@@ -323,20 +323,30 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        theClusterParamBase.probabilityY_ = theClusterParam.probabilityY_;
    }
 
-
-
+   
+   float ret_x, ret_y;
+   if(isnan(theClusterParam.templXrec_) || isnan( theClusterParam.templYrec_)){
+       ret_x = localx_1d;
+       ret_y = localy_1d;
+   }
+   else{
+       ret_x = theClusterParam.templXrec_;
+       ret_y = theClusterParam.templYrec_;
+   }
 
    //printf(" edgeTypeY_ is %i, mcol is %i, fail mode is %i, col_offis is %i nypix_calc is %i, templ_leny is %.2f \n", 
            //theClusterParam.edgeTypeY_, mcol, fail_mode, col_offset, nypix_calc, templ.clsleny());
    printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
            fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
-   printf("Local X, Local Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+   printf("Local X, Local Y = %.5f, %.5f \n", ret_x, ret_y);
    if(filled_from_2d && !theClusterParam.isOnEdge_)
         printf("1D: X,Y = %.5f, %.5f \n",localx_1d, localy_1d);
    else
         printf("1D: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
    printf("CR: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
-   return LocalPoint( theClusterParam.templXrec_, theClusterParam.templYrec_ );
+
+
+   return LocalPoint( ret_x, ret_y );
 }
 
 
