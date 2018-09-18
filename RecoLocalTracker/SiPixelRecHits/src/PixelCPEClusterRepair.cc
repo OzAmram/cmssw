@@ -151,6 +151,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 	ID = forwardTemplateID_ ; // forward
    }
    //cout << "PixelCPEClusterRepair : ID = " << ID << endl;
+   //
 
    // &&& PM, note for later: PixelCPEBase calculates minInX,Y, and maxInX,Y
    //     Why can't we simply use that and save time with row_offset, col_offset
@@ -183,6 +184,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
       << "Should never be here. PixelCPEClusterRepair should always be called with track angles. This is a bad error !!! ";
       lp = theDetParam.theTopol->localPosition( MeasurementPoint(tmp_x, tmp_y) );
    }
+
    
    //--- Compute the size of the matrix which will be passed to TemplateReco.
    //    We'll later make  clustMatrix[ mrow ][ mcol ]
@@ -235,6 +237,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        if ( (irow<mrow) & (icol<mcol) ) clustMatrix[irow][icol] =  float(pix.adc);
 
        //kill pixels at start of cluster
+       /*
        if(col_offset %2 == 0){
            //cluster starts at beginning of double column, kill first two cols
            //if large enough
@@ -251,17 +254,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
                fail_mode = 1;
            }
        }
-   }
-   bool has_added = false;
-   int nypix_calc =0;
-   for(int j=0; j<mcol; j++){
-       has_added = false;
-       for(int i=0; i<mrow; i++){
-           if(clustMatrix[i][j] > 0 && !has_added){
-               nypix_calc += 1+ int(ydouble[j]);
-               has_added = true;
-           }
-       }
+       */
    }
 
 
@@ -282,7 +275,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
      //--- Call the Template Reco 2d with cluster repair.0
      filled_from_2d = true;
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
-     printf("nydiff=%.2f proby1d=%.2e \n", 0., 0.);
+     printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
    }
    else {
      //theClusterParam.recommended2D_ = false;
@@ -334,8 +327,6 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        ret_y = theClusterParam.templYrec_;
    }
 
-   //printf(" edgeTypeY_ is %i, mcol is %i, fail mode is %i, col_offis is %i nypix_calc is %i, templ_leny is %.2f \n", 
-           //theClusterParam.edgeTypeY_, mcol, fail_mode, col_offset, nypix_calc, templ.clsleny());
    printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
            fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
    printf("Local X, Local Y = %.5f, %.5f \n", ret_x, ret_y);
@@ -369,6 +360,8 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
    theClusterParam.qBin_ = 0;
    // We have a boolean denoting whether the reco failed or not
    theClusterParam.hasFilledProb_ = false;
+
+
    
    // ******************************************************************
    //--- Call normal TemplateReco
@@ -434,9 +427,13 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       //--- templ.clsleny() is the expected length of the cluster along y axis.
       //--- If the fit is poor and cluster is shorter than expected, possibly
       //    due to truncated cluster, so try 2D reco
+      float totCharge = 0.;
+      for(int k = 0; k<clusterPayload.mrow * clusterPayload.mcol; k++){
+          totCharge += clusterPayload.matrix[k];
+      }
       if ( ((theClusterParam.probabilityY_ < minProbY_ ) && (templ.clsleny() - nypix > 1)) || true ) {
           theClusterParam.recommended2D_ = true;
-          printf("nydiff=%.2f proby1d=%.2e \n", templ.clsleny() - nypix, theClusterParam.probabilityY_);
+          printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
           // Truncated clusters usually come from stuck TBMs which kill entire
           // double columns
 
@@ -499,6 +496,13 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    theClusterParam.qBin_ = 0;
    // We have a boolean denoting whether the reco failed or not
    theClusterParam.hasFilledProb_ = false;
+
+   // Total charge in the cluster, used to make sure cluster is above readout
+   // threshold before passing to 2D Reco
+   float totCharge = 0.;
+   for(int k = 0; k<clusterPayload.mrow * clusterPayload.mcol; k++){
+       totCharge += clusterPayload.matrix[k];
+   }
    
    // ******************************************************************
    //--- Call 2D TemplateReco
@@ -525,6 +529,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
 
    float deltay = 0;    // return param
    int npixels = 0;     // return param
+   constexpr float minReadoutCharge = 4000.; //minimum charge of readout threshold, required for 2D to converge
 
    if(clusterPayload.mrow > 4){
        // The cluster is too big, the 2D reco will perform horribly.
@@ -532,6 +537,16 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
        theClusterParam.ierr2 = 8;
 
    }
+   /*
+   else if(totCharge < minReadoutCharge){
+       //there is not enough charge in the cluster (ie it is below readout
+       //threshold) This is likely due to some simulation of dead pixels
+       //2D won't converge, return error
+       //printf("below thresh: totCharge = %.0f clusterChg = %i \n", totCharge, theClusterParam.theCluster->charge() );
+       theClusterParam.ierr2 = 6;
+   }
+   */
+
    else{
        theClusterParam.ierr2 =
        PixelTempReco2D( ID, theClusterParam.cotalpha, theClusterParam.cotbeta,
@@ -557,6 +572,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    //--- Check exit status
    if UNLIKELY( theClusterParam.ierr2 != 0 )
    {
+      //printf("2D RECO had error %i \n", theClusterParam.ierr2);
       LogDebug("PixelCPEClusterRepair::localPosition") <<
       "2D reconstruction failed with error " << theClusterParam.ierr2 << "\n";
       
