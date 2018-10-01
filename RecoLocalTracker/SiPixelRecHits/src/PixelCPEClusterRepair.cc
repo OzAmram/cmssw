@@ -269,19 +269,19 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
 
 
-   printf("123CRTEST456 \n");
+   //printf("123CRTEST456 \n");
    //--- Are we on edge?
    if ( theClusterParam.isOnEdge_ ) {
      //--- Call the Template Reco 2d with cluster repair.0
      filled_from_2d = true;
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
-     printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
+     //printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
    }
    else {
      //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
-     theClusterParam.recommended2D_ = true;
+     //theClusterParam.recommended2D_ = true;
      //theClusterParam.edgeTypeY_ = 1;
 
      //--- Did we find a cluster which has bad probability and not enough charge?
@@ -327,6 +327,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        ret_y = theClusterParam.templYrec_;
    }
 
+   /*
    printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
            fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
    printf("Local X, Local Y = %.5f, %.5f \n", ret_x, ret_y);
@@ -335,6 +336,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    else
         printf("1D: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
    printf("CR: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+   */
 
 
    return LocalPoint( ret_x, ret_y );
@@ -431,9 +433,12 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       for(int k = 0; k<clusterPayload.mrow * clusterPayload.mcol; k++){
           totCharge += clusterPayload.matrix[k];
       }
-      if ( ((theClusterParam.probabilityY_ < minProbY_ ) && (templ.clsleny() - nypix > 1)) || true ) {
+      Double_t nydiff = templ.clsleny() - nypix;
+      Double_t qratio = totCharge/templ.qavg();
+
+      if ( (nydiff > 0.1) || (qratio < 0.6) || (theClusterParam.probabilityY_ < 0.15)){
           theClusterParam.recommended2D_ = true;
-          printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
+          //printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
           // Truncated clusters usually come from stuck TBMs which kill entire
           // double columns
 
