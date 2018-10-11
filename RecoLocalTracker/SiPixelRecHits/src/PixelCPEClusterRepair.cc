@@ -281,11 +281,12 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
      //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
-     //theClusterParam.recommended2D_ = true;
+     theClusterParam.recommended2D_ = true;
      //theClusterParam.edgeTypeY_ = 1;
 
      //--- Did we find a cluster which has bad probability and not enough charge?
      if ( theClusterParam.recommended2D_) {
+        printf("ClusterRepair calling 2D! \n");
        //--- Yes. So run Template Reco 2d with cluster repair.
        
 
