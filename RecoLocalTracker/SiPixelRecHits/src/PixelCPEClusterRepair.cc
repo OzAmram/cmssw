@@ -286,7 +286,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
      //--- Did we find a cluster which has bad probability and not enough charge?
      if ( theClusterParam.recommended2D_) {
-        printf("ClusterRepair calling 2D! \n");
+       // printf("ClusterRepair calling 2D! \n");
        //--- Yes. So run Template Reco 2d with cluster repair.
        
 
