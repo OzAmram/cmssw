@@ -38,6 +38,7 @@ std::shared_ptr<SiPixel2DTemplateDBObject> SiPixel2DTemplateDBObjectESProducer::
 
 	GlobalPoint center(0.0, 0.0, 0.0);
 	float theMagField = magfield.product()->inTesla(center).mag();
+    printf("2D ES Producer constructed \n");
 
 	  std::string label = "numerator";   // &&& Temporary: matches Barrel Layer1 for 2017 data
 	  //std::string label = "denominator"; // &&& Temporary: matches Barrel Layer1 fullsim MC

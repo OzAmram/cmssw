@@ -25,6 +25,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#define PRINT 0
+
 using namespace SiPixelTemplateReco;
 //using namespace SiPixelTemplateSplit;
 using namespace std;
@@ -269,20 +271,18 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
 
 
-   //printf("123CRTEST456 \n");
+   if(PRINT) printf("123CRTEST456 \n");
    //--- Are we on edge?
    if ( theClusterParam.isOnEdge_ ) {
      //--- Call the Template Reco 2d with cluster repair.0
      filled_from_2d = true;
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
-     //printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
+     if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
    }
    else {
      //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
-     theClusterParam.recommended2D_ = true;
-     //theClusterParam.edgeTypeY_ = 1;
 
      //--- Did we find a cluster which has bad probability and not enough charge?
      if ( theClusterParam.recommended2D_) {
@@ -308,6 +308,7 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    theClusterParamBase.qBin_ = theClusterParam.qBin_;
    theClusterParamBase.probabilityQ_ = theClusterParam.probabilityQ_;
    theClusterParamBase.filled_from_2d = filled_from_2d;
+   theClusterParamBase.edgeTypeY_ = theClusterParam.edgeTypeY_;
    if(filled_from_2d){
        theClusterParamBase.probabilityX_ = theClusterParam.templProbXY_;
        theClusterParamBase.probabilityY_ = 0.;
@@ -328,16 +329,16 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
        ret_y = theClusterParam.templYrec_;
    }
 
-   /*
-   printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
-           fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
-   printf("Local X, Local Y = %.5f, %.5f \n", ret_x, ret_y);
-   if(filled_from_2d && !theClusterParam.isOnEdge_)
-        printf("1D: X,Y = %.5f, %.5f \n",localx_1d, localy_1d);
-   else
-        printf("1D: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
-   printf("CR: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
-   */
+   if(PRINT){
+       printf("fail_mode=%i, on_edge=%i, used_2d=%i, spans_two_ROCs=%i, detID=%i \n",
+               fail_mode, theClusterParam.isOnEdge_, filled_from_2d, theClusterParam.spansTwoROCs_, theDetParam.detTemplateId);
+       printf("Local X, Local Y = %.5f, %.5f \n", ret_x, ret_y);
+       if(filled_from_2d && !theClusterParam.isOnEdge_)
+            printf("1D: X,Y = %.5f, %.5f \n",localx_1d, localy_1d);
+       else
+            printf("1D: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+       printf("CR: X,Y = %.5f, %.5f \n", theClusterParam.templXrec_, theClusterParam.templYrec_);
+   }
 
 
    return LocalPoint( ret_x, ret_y );
@@ -437,33 +438,39 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       Double_t nydiff = templ.clsleny() - nypix;
       Double_t qratio = totCharge/templ.qavg();
 
-      if ( (nydiff > 0.1) || (qratio < 0.6) || (theClusterParam.probabilityY_ < 0.15)){
+      //if ( (nydiff > 0.1) || (qratio < 0.6) || (theClusterParam.probabilityY_ < 0.15)){
+      if ( (nydiff > 0.5) || (qratio < 0.5)){
           theClusterParam.recommended2D_ = true;
-          //printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
+          theClusterParam.hasBadPixels_ = true;
+          if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
           // Truncated clusters usually come from stuck TBMs which kill entire
           // double columns
 
           // Cluster is of even length, so either both or neither ends, end on
           // a double column, so we cannot figure out the likely edge of
           // truncation, let the 2D algorithm try extending on both sides (option 3)
-          if(nypix % 2 == 0) theClusterParam.edgeTypeY_ = 3;
+          if(theClusterParam.theCluster->sizeY() % 2 == 0) theClusterParam.edgeTypeY_ = 3;
 
           else{
               //The cluster is of odd length, only one of the edges can end on
               //a double column, this is the likely edge of truncation
               //Double columns always start on even indexes
 
-              int max_col = theClusterParam.theCluster->maxPixelCol();
+              int min_col = theClusterParam.theCluster->minPixelCol();
 
-              if(max_col %2 ==0){
+              if(min_col %2 ==0){
                   //begining edge is at a double column (end edge cannot be,
                   //because odd length) so likely truncated at small y (option 1) 
                   theClusterParam.edgeTypeY_ = 1;
+                  //try doing it backwards?
+                  //theClusterParam.edgeTypeY_ = 2;
               }
               else{ 
                   //end edge is at a double column (beginning edge cannot be,
                   //because odd length) so likely truncated at large y (option 2) 
                   theClusterParam.edgeTypeY_ = 2;
+                  //try doing it backwards?
+                  //theClusterParam.edgeTypeY_ = 1;
               }
           }
       }
@@ -519,6 +526,8 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    //--- Input:
    //   edgeflagy - (input) flag to indicate the present of edges in y: 
    //           0=none (or interior gap),1=edge at small y, 2=edge at large y, 3=edge at either end
+   //           edgeTypeY is either set by CPEBase for actual detector edges, or guessed
+   //           by call1DReco when trying to fix dead double columns
    //
    //   edgeflagx - (input) flag to indicate the present of edges in x: 
    //           0=none, 1=edge at small x, 2=edge at large x
@@ -529,9 +538,6 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    //   deltay - (output) template y-length - cluster length [when > 0, possibly missing end]
    //   npixels - ???     &&& Ask Morris
 
-   //edgeTypeY is either set by CPEBase for actual detector edges, or guessed
-   //by call1DReco when trying to fix dead double columns
-   float edgeTypeY = theClusterParam.edgeTypeY_ ;  
 
    float deltay = 0;    // return param
    int npixels = 0;     // return param
@@ -557,7 +563,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
        theClusterParam.ierr2 =
        PixelTempReco2D( ID, theClusterParam.cotalpha, theClusterParam.cotbeta,
                        locBz, locBx,
-                       edgeTypeY , theClusterParam.edgeTypeX_ ,
+                       theClusterParam.edgeTypeY_ , theClusterParam.edgeTypeX_ ,
                        clusterPayload,
                        templ2d,
                        theClusterParam.templYrec_, theClusterParam.templSigmaY_, 

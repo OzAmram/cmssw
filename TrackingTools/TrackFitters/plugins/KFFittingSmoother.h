@@ -18,6 +18,13 @@
 #include "TrackingTools/TransientTrackingRecHit/interface/InvalidTransientRecHit.h"
 #include "CommonTools/Utils/interface/DynArray.h"
 
+/*
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
+#include "DataFormats/SiPixelDetId/interface/PXBDetId.h"
+#include "DataFormats/SiPixelDetId/interface/PXFDetId.h"
+#include "TrackingTools/DetLayers/interface/DetLayer.h"
+*/
 
 namespace {
 
@@ -143,7 +150,7 @@ namespace {
   };
 
 
-// #define VI_DEBUG
+ //#define VI_DEBUG
   
 #ifdef VI_DEBUG
 #define DPRINT(x) std::cout << x << ": "
@@ -269,6 +276,7 @@ if (smoothed.isValid()) {
     }
     
     if (0==nbad) break;
+    //if(nbad !=0) printf("Nbad is %i \n", (int) nbad);
 
     DPRINT("TrackFitters") << "size/found/outliers list " << smoothed.measurements().size() <<'/' << smoothed.foundHits() << ' ' << nbad << ": ";
     for (auto i=0U; i<nbad; ++i) PRINT << bad[i] <<',';
@@ -337,6 +345,17 @@ if (smoothed.isValid()) {
     }
       
     DPRINT("TrackFitters") << "outlier removed " << bad[loc] << '/' << minChi2 << " was " <<  smoothed.chiSquared()<< "\n";
+
+    // enum Detector { Tracker=1, Muon=2, Ecal=3, Hcal=4, Calo=5 };
+    // sub detector : barrel =1, endcap =2 
+    /*
+    auto outlier_detid = PXBDetId(smoothed.measurements()[bad[loc]].recHitR().geographicalId());
+    if(outlier_detid.det() == 1 &&  outlier_detid.subdetId() == PixelSubdetector::PixelBarrel){
+        auto pxb_detid = PXBDetId(outlier_detid);
+        printf("Outlier from barrel: layer is %u, ladder %u, id %u \n",pxb_detid.layer(), pxb_detid.ladder(), pxb_detid.rawId());
+    }
+    */
+
     
     if (minChi2>smoothed.chiSquared()) {
 
