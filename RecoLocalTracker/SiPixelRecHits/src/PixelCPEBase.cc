@@ -264,9 +264,11 @@ PixelCPEBase::setTheClu( DetParam const & theDetParam, ClusterParam & theCluster
      theClusterParam.edgeTypeY_ = 0;
    
    theClusterParam.isOnEdge_ = ( theClusterParam.edgeTypeX_ || theClusterParam.edgeTypeY_ );
+   /*
    if(theClusterParam.isOnEdge_){
        printf("minY, maxY = %i, %i. Set flag %i \n", minInY, maxInY, theClusterParam.edgeTypeY_);
    }
+   */
    
    // &&& FOR NOW UNUSED. KEEP IT IN CASE WE WANT TO USE IT IN THE FUTURE
    // Bad Pixels have their charge set to 0 in the clusterizer
