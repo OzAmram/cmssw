@@ -414,7 +414,19 @@ PixelCPETemplateReco::localPosition(DetParam const & theDetParam, ClusterParam &
       } //else {cout<<" Do not do LA offset correction "<<endl;} //dk
       
    }
-   
+   float totCharge = 0.;
+   for(int k = 0; k<clusterPayload.mrow * clusterPayload.mcol; k++){
+       totCharge += clusterPayload.matrix[k];
+   }
+
+   int nypix = mcol;
+   for(int k = 0; k<clusterPayload.mcol;  k++){
+      if(clusterPayload.ydouble[k]) nypix += 1;
+   }
+   Double_t nydiff = templ.clsleny() - nypix;
+   Double_t qratio = totCharge/templ.qavg();
+   if ( nydiff > 0.3 && qratio < 0.8 ) theClusterParam.hasBadPixels_ = true;
+
    // Save probabilities and qBin in the quantities given to us by the base class
    // (for which there are also inline getters).  &&& templProbX_ etc. should be retired...
    theClusterParam.probabilityX_  = theClusterParam.templProbX_;

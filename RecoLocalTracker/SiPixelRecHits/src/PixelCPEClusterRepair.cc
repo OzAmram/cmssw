@@ -276,6 +276,19 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
    if ( theClusterParam.isOnEdge_ ) {
      //--- Call the Template Reco 2d with cluster repair.0
      filled_from_2d = true;
+
+     //For now, set y flags ourselves and don't use any x-flags
+     //ymax = 415, xmax = 159
+     theClusterParam.edgeTypeX_ = 0;
+
+     //if(theClusterParam.theCluster->minPixelCol() ==0){
+     //    theClusterParam.edgeTypeY_ = 1;
+     //}
+     //else if(theClusterParam.theCluster->maxPixelCol() == 415){
+     //    theClusterParam.edgeTypeY_ = 2;
+     //}
+
+
      callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
      if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
    }
@@ -439,7 +452,8 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
       Double_t qratio = totCharge/templ.qavg();
 
       //if ( (nydiff > 0.1) || (qratio < 0.6) || (theClusterParam.probabilityY_ < 0.15)){
-      if ( (nydiff > 0.5) || (qratio < 0.5)){
+      //if ( (nydiff > 0.5) || (qratio < 0.5)){
+      if ( nydiff > 0.3 && qratio < 0.8 ){
           theClusterParam.recommended2D_ = true;
           theClusterParam.hasBadPixels_ = true;
           if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
@@ -473,6 +487,8 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
                   //theClusterParam.edgeTypeY_ = 1;
               }
           }
+          //force edgey3
+          //theClusterParam.edgeTypeY_ = 3;
       }
       
       //--- Go from microns to centimeters
@@ -512,10 +528,12 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
 
    // Total charge in the cluster, used to make sure cluster is above readout
    // threshold before passing to 2D Reco
+   /*
    float totCharge = 0.;
    for(int k = 0; k<clusterPayload.mrow * clusterPayload.mcol; k++){
        totCharge += clusterPayload.matrix[k];
    }
+   */
    
    // ******************************************************************
    //--- Call 2D TemplateReco
@@ -558,6 +576,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
        theClusterParam.ierr2 = 6;
    }
    */
+
 
    else{
        theClusterParam.ierr2 =

@@ -16,7 +16,7 @@ PixelCPEGenericESProducer = cms.ESProducer("PixelCPEGenericESProducer",
 
     # Edge cluster errors in microns (determined by looking at residual RMS) 
     EdgeClusterErrorX = cms.double( 50.0 ),                                      
-    EdgeClusterErrorY = cms.double( 85.0 ),                                                     
+    EdgeClusterErrorY = cms.double( 150.0),                                                     
 
     # ggiurgiu@jhu.edu
     inflate_errors = cms.bool(False),

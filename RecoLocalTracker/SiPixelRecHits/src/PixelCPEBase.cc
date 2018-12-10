@@ -193,10 +193,13 @@ void PixelCPEBase::fillDetParams()
       if (proxyT) p.theRecTopol = dynamic_cast<const RectangularPixelTopology*>(&(proxyT->specificTopology()));
       else p.theRecTopol = dynamic_cast<const RectangularPixelTopology*>(p.theTopol);
       assert(p.theRecTopol);
+
       
       //--- The geometrical description of one module/plaquette
-      //p.theNumOfRow = p.theRecTopol->nrows();	// rows in x //Not used, AH. PM: leave commented out.
-      //p.theNumOfCol = p.theRecTopol->ncolumns();	// cols in y //Not used, AH. PM: leave commented out.
+      //int theNumOfRow = p.theRecTopol->nrows();	// rows in x //Not used, AH. PM: leave commented out.
+      //int theNumOfCol = p.theRecTopol->ncolumns();	// cols in y //Not used, AH. PM: leave commented out.
+      //printf("theRecTopol %i rows and %i cols \n", theNumOfRow, theNumOfCol);
+      //printf("proxyT %i rows and %i cols \n", proxyT->nrows(), proxyT->ncolumns());
       std::pair<float,float> pitchxy = p.theRecTopol->pitch();
       p.thePitchX = pitchxy.first;	     // pitch along x
       p.thePitchY = pitchxy.second;	     // pitch along y
@@ -240,21 +243,30 @@ PixelCPEBase::setTheClu( DetParam const & theDetParam, ClusterParam & theCluster
    maxInX = theClusterParam.theCluster->maxPixelRow();
    maxInY = theClusterParam.theCluster->maxPixelCol();
 
-   if      ( theDetParam.theRecTopol->isItEdgePixelInX(minInX) )
+   int min_row(0), min_col(0);
+   int max_row = theDetParam.theRecTopol->nrows() - 1;
+   int max_col = theDetParam.theRecTopol->ncolumns() - 1;
+
+   
+
+   if ( minInX == min_row)
      theClusterParam.edgeTypeX_ = 1;
-   else if ( theDetParam.theRecTopol->isItEdgePixelInX(maxInX) )
+   else if ( maxInX == max_row)
      theClusterParam.edgeTypeX_ = 2;
    else
      theClusterParam.edgeTypeX_ = 0;
      
-   if      ( theDetParam.theRecTopol->isItEdgePixelInY(minInY) )
+   if( minInY == min_col)
      theClusterParam.edgeTypeY_ = 1;
-   else if ( theDetParam.theRecTopol->isItEdgePixelInY(maxInY) )
+   else if ( maxInY == max_col)
      theClusterParam.edgeTypeY_ = 2;
    else
      theClusterParam.edgeTypeY_ = 0;
    
    theClusterParam.isOnEdge_ = ( theClusterParam.edgeTypeX_ || theClusterParam.edgeTypeY_ );
+   if(theClusterParam.isOnEdge_){
+       printf("minY, maxY = %i, %i. Set flag %i \n", minInY, maxInY, theClusterParam.edgeTypeY_);
+   }
    
    // &&& FOR NOW UNUSED. KEEP IT IN CASE WE WANT TO USE IT IN THE FUTURE
    // Bad Pixels have their charge set to 0 in the clusterizer
