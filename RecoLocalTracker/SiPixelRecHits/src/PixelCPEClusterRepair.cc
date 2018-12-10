@@ -141,6 +141,9 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
       throw cms::Exception("PixelCPEClusterRepair::localPosition :")
       << "A non-pixel detector type in here?";
    
+   DetId id = (theDetParam.theDet->geographicalId());
+   bool isBarrel  = GeomDetEnumerators::isBarrel(theDetParam.thePart);
+   int layer=ttopo_.layer(id);
    int ID = -9999;
    if ( LoadTemplatesFromDB_ ) {
       int ID0 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId()); // just to comapre
@@ -293,10 +296,12 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
      if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", 0., 0., 1.0);
    }
    else {
-     //theClusterParam.recommended2D_ = false;
      //--- Call the vanilla Template Reco
      callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
 
+     //don't run cluster repair for broken clusters on layer 1 
+     if( isBarrel && layer == 1 ) theClusterParam.recommended2D_ = false;
+     
      //--- Did we find a cluster which has bad probability and not enough charge?
      if ( theClusterParam.recommended2D_) {
        // printf("ClusterRepair calling 2D! \n");
