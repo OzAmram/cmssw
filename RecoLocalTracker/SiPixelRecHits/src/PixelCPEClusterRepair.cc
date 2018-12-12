@@ -458,9 +458,12 @@ PixelCPEClusterRepair::callTempReco1D( DetParam const & theDetParam,
 
       //if ( (nydiff > 0.1) || (qratio < 0.6) || (theClusterParam.probabilityY_ < 0.15)){
       //if ( (nydiff > 0.5) || (qratio < 0.5)){
-      if ( nydiff > 0.3 && qratio < 0.8 ){
+      //if ( nydiff > 0.3 && qratio < 0.8 ){
+      if ( nydiff > 0.){
           theClusterParam.recommended2D_ = true;
           theClusterParam.hasBadPixels_ = true;
+          theClusterParam.templProbXY_ = nydiff;
+          theClusterParam.probabilityQ_ = qratio;
           if(PRINT) printf("nydiff=%.2f proby1d=%.2e qratio=%.3f \n", templ.clsleny() - nypix, theClusterParam.probabilityY_, totCharge/templ.qavg());
           // Truncated clusters usually come from stuck TBMs which kill entire
           // double columns
@@ -526,7 +529,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    float nonsense = -99999.9f; // nonsense init value
    theClusterParam.templXrec_ = theClusterParam.templYrec_ = theClusterParam.templSigmaX_ = theClusterParam.templSigmaY_ = nonsense;
    // If the template recontruction fails, we want to return 1.0 for now
-   theClusterParam.probabilityX_ = theClusterParam.probabilityY_ = theClusterParam.probabilityQ_ = 1.f;
+   //theClusterParam.probabilityX_ = theClusterParam.probabilityY_ = theClusterParam.probabilityQ_ = 1.f;
    theClusterParam.qBin_ = 0;
    // We have a boolean denoting whether the reco failed or not
    theClusterParam.hasFilledProb_ = false;
@@ -566,6 +569,9 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
    int npixels = 0;     // return param
    constexpr float minReadoutCharge = 4000.; //minimum charge of readout threshold, required for 2D to converge
 
+
+   float dummy1,dummy2;
+
    if(clusterPayload.mrow > 4){
        // The cluster is too big, the 2D reco will perform horribly.
        // Better to return immediately in error
@@ -592,8 +598,9 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
                        templ2d,
                        theClusterParam.templYrec_, theClusterParam.templSigmaY_, 
                        theClusterParam.templXrec_, theClusterParam.templSigmaX_, 
-                       theClusterParam.templProbXY_,
-                       theClusterParam.probabilityQ_,
+                       //theClusterParam.templProbXY_,
+                       //theClusterParam.probabilityQ_,
+                       dummy1, dummy2,
                        theClusterParam.qBin_,
                        deltay, npixels
                        );
@@ -612,7 +619,7 @@ PixelCPEClusterRepair::callTempReco2D( DetParam const & theDetParam,
       LogDebug("PixelCPEClusterRepair::localPosition") <<
       "2D reconstruction failed with error " << theClusterParam.ierr2 << "\n";
       
-      theClusterParam.probabilityX_ = theClusterParam.probabilityY_ = theClusterParam.probabilityQ_ = 0.f;
+      //theClusterParam.probabilityX_ = theClusterParam.probabilityY_ = theClusterParam.probabilityQ_ = 0.f;
       theClusterParam.qBin_ = 0;
       // GG: what do we do in this case?  For now, just return the cluster center of gravity in microns
       // In the x case, apply a rough Lorentz drift average correction
