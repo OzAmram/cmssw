@@ -494,8 +494,8 @@ void PixelCPEClusterRepair::checkRecommend2D( DetParam const & theDetParam, Clus
     DetId id = (theDetParam.theDet->geographicalId());
     bool isBarrel  = GeomDetEnumerators::isBarrel(theDetParam.thePart);
     int layer=ttopo_.layer(id);
-    if(!isBarrel){
-        //only run on barrel
+    if(!isBarrel || layer == 1){
+        //only run on barrel layers 2-4
         theClusterParam.recommended2D_ = false;
         return;
     }
@@ -533,9 +533,6 @@ void PixelCPEClusterRepair::checkRecommend2D( DetParam const & theDetParam, Clus
         
         theClusterParam.recommended2D_ = true;
         theClusterParam.hasBadPixels_ = true;
-
-        //for now, don't try to fix any clusters in layer 1
-        if( layer == 1 ) theClusterParam.recommended2D_ = false;
 
         // Figure out what edge flags to set for truncated cluster
         // Truncated clusters usually come from dead double columns
