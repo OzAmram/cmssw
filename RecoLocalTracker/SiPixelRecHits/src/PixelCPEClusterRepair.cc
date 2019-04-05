@@ -15,7 +15,6 @@
 // Commented for now (3/10/17) until we figure out how to resuscitate 2D template splitter
 /// #include "RecoLocalTracker/SiPixelRecHits/interface/SiPixelTemplateSplit.h"
 
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include <vector>
 #include "boost/multi_array.hpp"
@@ -144,18 +143,22 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
       << "A non-pixel detector type in here?";
 
    
-   int ID = -9999;
+   int ID1 = -9999;
+   int ID2 = -9999;
    if ( LoadTemplatesFromDB_ ) {
-      int ID0 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId()); // just to comapre
-      ID = theDetParam.detTemplateId;
-      if(ID0!=ID) edm::LogError("PixelCPEClusterRepair") <<" different id"<< ID<<" "<<ID0<<endl;
+      ID1 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId()); // 1D temp ID 
+      ID2 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId()); // 2D temp ID
+      int ID_check = theDetParam.detTemplateId;
+      if(ID1!=ID_check) edm::LogError("PixelCPEClusterRepair") <<" different id"<< ID1<<" "<<ID_check<<endl;
+      if(ID1 != ID2) edm::LogInfo("PixelCPEClusterRepair::localPosition") 
+          << "different template ID between 1D and 2D" << ID1 << " " << ID2 << endl;
    } else { // from asci file
       if ( ! GeomDetEnumerators::isEndcap(theDetParam.thePart) )
-	ID = barrelTemplateID_  ; // barrel
+	ID1 = ID2 = barrelTemplateID_  ; // barrel
       else
-	ID = forwardTemplateID_ ; // forward
+	ID1 = ID2 = forwardTemplateID_ ; // forward
    }
-   //cout << "PixelCPEClusterRepair : ID = " << ID << endl;
+   //cout << "PixelCPEClusterRepair : ID1 = " << ID1 << endl;
 
    // &&& PM, note for later: PixelCPEBase calculates minInX,Y, and maxInX,Y
    //     Why can't we simply use that and save time with row_offset, col_offset
@@ -246,15 +249,15 @@ PixelCPEClusterRepair::localPosition(DetParam const & theDetParam, ClusterParam 
 
 
    //--- Should we run the 2D reco?
-   checkRecommend2D(theDetParam, theClusterParam, clusterPayload, ID);
+   checkRecommend2D(theDetParam, theClusterParam, clusterPayload, ID1);
    if ( theClusterParam.recommended2D_ ) {
      //--- Call the Template Reco 2d with cluster repair
      filled_from_2d = true;
-     callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID, lp );
+     callTempReco2D( theDetParam, theClusterParam, clusterPayload2d, ID2, lp );
    }
    else {
      //--- Call the vanilla Template Reco
-     callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID, lp );
+     callTempReco1D( theDetParam, theClusterParam, clusterPayload, ID1, lp );
      filled_from_2d = false;
    }
 
