@@ -39,13 +39,13 @@ allTags["SimLA"] = {
 allTags["GenError"] = {
     'T6'  : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T14' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T14_v0_mc_100x25' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T15_v0_mc_50x50' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),   # cell is 50um (local-x) x 50um (local-y) , VBias=350V
+    'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T15_v0_mc_25x100' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),   # cell is 50um (local-x) x 50um (local-y) , VBias=350V
 }
 
 allTags["Template"] = {
     'T6'  : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelTemplatesRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T14' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T14_v0_mc_100x25' ,SiPixelTemplatesRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_50x50' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-24 11:00:00.000"] ), ),  # cell is 50um (local-x) x 50um (local-y) , VBias=350V
+    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_25x100' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-24 11:00:00.000"] ), ),  # cell is 50um (local-x) x 50um (local-y) , VBias=350V
 }
 
 ##
