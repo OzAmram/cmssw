@@ -13,39 +13,39 @@ allTags={}
 
 
 allTags["LA"] = {
-    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T6_v1_mc'  ,SiPixelLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
-    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T14_v1_mc' ,SiPixelLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
-    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T15_v1_mc' ,SiPixelLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T6_v1_mc'  ,SiPixelLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T14_v1_mc' ,SiPixelLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T15_v1_mc' ,SiPixelLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
 }
 
 allTags["LAWidth"] = {
-    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "forWidth", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
-    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
-    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
+    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "forWidth", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
+    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (fall-back to offset)
 }
 
 allTags["LAfromAlignment"] = {
-    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (not in use)
-    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (not in use)
-    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-16 20:00:00.000"] ), ),  # uH=0.0/T (not in use)
+    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (not in use)
+    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (not in use)
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-24 11:00:00.000"] ), ),  # uH=0.0/T (not in use)
 }
 
 allTags["SimLA"] = {
-    'T6'  : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T6_v1_mc'  ,SiPixelSimLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
-    'T14' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T14_v1_mc' ,SiPixelSimLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
-    'T15' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T15_v1_mc' ,SiPixelSimLARecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T6'  : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T6_v1_mc'  ,SiPixelSimLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T14' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T14_v1_mc' ,SiPixelSimLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
+    'T15' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T15_v1_mc' ,SiPixelSimLARecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ), #uH = 0.0431/T (TBPX), uH=0.0/T (TEPX+TFPX)
 }
 
 allTags["GenError"] = {
-    'T6'  : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelGenErrorRecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T14' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T14_v0_mc_100x25' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T15_v0_mc_100x25' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T6'  : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T14' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T14_v0_mc_100x25' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T15_v0_mc_50x50' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),   # cell is 50um (local-x) x 50um (local-y) , VBias=350V
 }
 
 allTags["Template"] = {
-    'T6'  : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelTemplatesRecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T14' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T14_v0_mc_100x25' ,SiPixelTemplatesRecord,connectionString, "", "2019-09-16 20:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
-    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_100x25' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-16 20:00:00.000"] ), ), # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T6'  : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T6_v0_mc_100x25'  ,SiPixelTemplatesRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T14' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T14_v0_mc_100x25' ,SiPixelTemplatesRecord,connectionString, "", "2019-09-24 11:00:00.000"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
+    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_50x50' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-24 11:00:00.000"] ), ),  # cell is 50um (local-x) x 50um (local-y) , VBias=350V
 }
 
 ##
