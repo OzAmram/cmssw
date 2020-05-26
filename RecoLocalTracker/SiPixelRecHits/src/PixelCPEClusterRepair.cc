@@ -44,6 +44,7 @@ PixelCPEClusterRepair::PixelCPEClusterRepair(edm::ParameterSet const& conf,
                                              const SiPixel2DTemplateDBObject* templateDBobject2D)
     : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1) {
   LogDebug("PixelCPEClusterRepair::(constructor)") << endl;
+  printf("Setup cluster repair \n");
 
   //--- Parameter to decide between DB or text file template access
   if (LoadTemplatesFromDB_) {
@@ -102,8 +103,10 @@ PixelCPEClusterRepair::PixelCPEClusterRepair(edm::ParameterSet const& conf,
   //     XYZ n (XYZ as above, n = layer, wheel or disk = 1 .. 6 ;)
   std::vector<std::string> str_recommend2D = conf.getParameter<std::vector<std::string>>("Recommend2D");
   recommend2D_.reserve(str_recommend2D.size());
+  std::cout << " CR Recommending : " << std::endl;
   for (auto& str : str_recommend2D) {
     recommend2D_.push_back(str);
+    std::cout << str << std::endl;
   }
 
   // do not recommend 2D if theMagField!=3.8T
@@ -113,6 +116,7 @@ PixelCPEClusterRepair::PixelCPEClusterRepair(edm::ParameterSet const& conf,
 
   // run CR on damaged clusters (and not only on edge hits)
   runDamagedClusters_ = conf.getParameter<bool>("RunDamagedClusters");
+  printf("RunDamagedClusters: %i \n", runDamagedClusters_);
 }
 
 //-----------------------------------------------------------------------------
@@ -595,6 +599,16 @@ void PixelCPEClusterRepair::checkRecommend2D(DetParam const& theDetParam,
       theClusterParam.recommended2D_ = false;
     }
 
+    //determine edge flag based on sign of cot(beta)
+    //cot(beta) > 0 means charge was lost at the begining of the cluster (option 1)
+    //cot(beta) < 0 means charge was lost at the end of the cluster (option 2)
+    if(theClusterParam.cotbeta > 0) 
+        theClusterParam.edgeTypeY_ = 1;
+    else
+        theClusterParam.edgeTypeY_ = 2;
+  
+
+    /*
     // Figure out what edge flags to set for truncated cluster
     // Truncated clusters usually come from dead double columns
     //
@@ -618,6 +632,7 @@ void PixelCPEClusterRepair::checkRecommend2D(DetParam const& theDetParam,
         theClusterParam.edgeTypeY_ = 2;
       }
     }
+      */
   }
 }
 
