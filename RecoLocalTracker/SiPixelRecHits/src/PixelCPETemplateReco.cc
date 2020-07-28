@@ -130,7 +130,7 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
     else
       ID = forwardTemplateID_;  // forward
   }
-  //cout << "PixelCPETemplateReco : ID = " << ID << endl;
+  //std::cout << "PixelCPETemplateReco : ID = " << ID << std::endl;
 
   SiPixelTemplate templ(thePixelTemp_);
 
