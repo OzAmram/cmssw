@@ -42,5 +42,5 @@
 #define T2HX 3           // = T2XSIZE/2
 #define TEMP_ENTRY_SIZEX_A 60
 #define TEMP_ENTRY_SIZEX_B 60
-#define TEMP_ENTRY_SIZEY 60
+#define TEMP_ENTRY_SIZEY 80
 #endif

@@ -255,8 +255,9 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
 
   // Check exit status
   if UNLIKELY (theClusterParam.ierr != 0) {
-    LogDebug("PixelCPETemplateReco::localPosition")
-        << "reconstruction failed with error " << theClusterParam.ierr << "\n";
+    edm::LogWarning("PixelCPETemplateReco::localPosition")
+        << "template reconstruction failed with error " << theClusterParam.ierr << "\n"
+        << "Applying simple reconstruction as a backup";
 
     // Gavril: what do we do in this case ? For now, just return the cluster center of gravity in microns
     // In the x case, apply a rough Lorentz drift average correction
