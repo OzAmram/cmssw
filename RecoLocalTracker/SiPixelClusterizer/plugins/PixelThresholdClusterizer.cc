@@ -262,15 +262,9 @@ void PixelThresholdClusterizer::copy_to_buffer(DigiIterator begin, DigiIterator 
   for (DigiIterator di = begin; di != end; ++di) {
     int row = di->row();
     int col = di->column();
-<<<<<<< HEAD
     // VV: do not calibrate a fake pixel, it already has a unit of 10e-:
     int adc = (di->flag() != 0) ? di->adc() * 10 : electron[i];  // this is in electrons
     i++;
-=======
-	 // VV: do not calibrate a fake pixel, it already has a unit of 10e-:
-	 int adc = (di->flag()!=0) ? di->adc() * 10 : electron[i];  // this is in electrons
-	 i++;
->>>>>>> Register flagged pixels as fake, use them for seeding or during cluster growing depending on their adc, and remove them from final clusters
 
 #ifdef PIXELREGRESSION
     int adcOld = calibrate(di->adc(), col, row);
@@ -290,14 +284,9 @@ void PixelThresholdClusterizer::copy_to_buffer(DigiIterator begin, DigiIterator 
 
     if (adc >= thePixelThreshold) {
       theBuffer.set_adc(row, col, adc);
-<<<<<<< HEAD
       // VV: add pixel to the fake list. Only when running on digi collection
       if (di->flag() != 0)
         theFakePixels[row * theNumOfCols + col] = true;
-=======
-		// VV: add pixel to the fake list. Only when running on digi collection
-		if (di->flag()!=0) theFakePixels[row*theNumOfCols+col]=true;
->>>>>>> Register flagged pixels as fake, use them for seeding or during cluster growing depending on their adc, and remove them from final clusters
       if (adc >= theSeedThreshold)
         theSeeds.push_back(SiPixelCluster::PixelPos(row, col));
     }
@@ -460,10 +449,6 @@ SiPixelCluster PixelThresholdClusterizer::make_cluster(const SiPixelCluster::Pix
             cldata.add(newpix, theBuffer(r, c));
           }
           theBuffer.set_adc(newpix, 1);
-			 // VV: no fake pixels in cluster, leads to non-contiguous clusters
-			 if (!theFakePixels[r*theNumOfCols+c]) {
-				cldata.add(newpix, theBuffer(r, c));
-			 }
         }
 
         /* //Commenting out the addition of dead pixels to the cluster until further testing -- dfehling 06/09

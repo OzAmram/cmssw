@@ -11,22 +11,20 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 
 class SiPixelDigiMorphing : public edm::stream::EDProducer<> {
-  
- public:
-  
+public:
   explicit SiPixelDigiMorphing(const edm::ParameterSet& conf);
   ~SiPixelDigiMorphing() override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   void produce(edm::Event& e, const edm::EventSetup& c) override;
 
- private:
+private:
   edm::EDGetTokenT<edm::DetSetVector<PixelDigi>> tPixelDigi;
   edm::EDPutTokenT<edm::DetSetVector<PixelDigi>> tPutPixelDigi;
 
   int32_t nrows_;
   int32_t ncols_;
-  int32_t nrocs_;     // in Phase 1, this is ROCs, but could be any subset of a pixel row
+  int32_t nrocs_;  // in Phase 1, this is ROCs, but could be any subset of a pixel row
   int32_t ncols_r_;
 
   int32_t iters_;
@@ -36,12 +34,11 @@ class SiPixelDigiMorphing : public edm::stream::EDProducer<> {
   std::vector<uint64_t> kernel2_;
   uint64_t mask_;
 
-  enum MorphOption {Dilate, Erode};
+  enum MorphOption { Dilate, Erode };
 
   uint32_t fakeAdc_;
 
   void morph(uint64_t* imap, uint64_t* omap, uint64_t* kernel, MorphOption op);
-
 };
 
 #endif
