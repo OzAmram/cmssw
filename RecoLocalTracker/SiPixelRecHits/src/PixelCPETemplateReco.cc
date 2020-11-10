@@ -255,8 +255,16 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
 
   // Check exit status
   if UNLIKELY (theClusterParam.ierr != 0) {
-    LogDebug("PixelCPETemplateReco::localPosition")
-        << "reconstruction failed with error " << theClusterParam.ierr << "\n";
+    if (theClusterParam.trk_momentum > 1.) {  //don't print warnings for very low momentum tracks
+      warnings_.add(fmt::format("PixelCPETemplateReco::localPosition() : Template reconstruction failed with error "
+                                "{0}. Applying simple reco as backup",
+                                theClusterParam.ierr),
+                    fmt::format("Cotalpha {0} CotBeta {1} Template ID {2}. Det ID {3}",
+                                theClusterParam.cotalpha,
+                                theClusterParam.cotbeta,
+                                ID,
+                                theDetParam.theDet->geographicalId()));
+    }
 
     // Gavril: what do we do in this case ? For now, just return the cluster center of gravity in microns
     // In the x case, apply a rough Lorentz drift average correction

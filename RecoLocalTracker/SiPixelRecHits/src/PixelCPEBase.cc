@@ -43,7 +43,8 @@ PixelCPEBase::PixelCPEBase(edm::ParameterSet const& conf,
       theFlag_(flag),
       magfield_(mag),
       geom_(geom),
-      ttopo_(ttopo) {
+      ttopo_(ttopo),
+      warnings_(std::string("PixelCPEBase"), edm::isDebugEnabled()) {
 #ifdef EDM_ML_DEBUG
   nRecHitsTotal_ = 0;
   nRecHitsUsedEdge_ = 0,
@@ -263,6 +264,8 @@ void PixelCPEBase::computeAnglesFromTrajectory(DetParam const& theDetParam,
   theClusterParam.trk_lp_y = trk_lp.y();
 
   theClusterParam.with_track_angle = true;
+
+  theClusterParam.trk_momentum = ltp.momentum().mag();
 
   // GG: needed to correct for bows/kinks
   theClusterParam.loc_trk_pred = Topology::LocalTrackPred(

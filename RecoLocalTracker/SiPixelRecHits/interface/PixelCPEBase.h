@@ -49,6 +49,46 @@
 #include <atomic>
 #endif
 
+class PixelCPEWarningSummary {
+private:
+  bool m_debug;
+  std::string m_category;
+  std::map<std::string, std::size_t> m_warnings;
+
+public:
+  PixelCPEWarningSummary(const std::string& category, bool debug = false) : m_debug(debug), m_category(category) {}
+
+  void add(const std::string& message, const std::string& details) {
+    const auto wIt = std::find_if(
+        std::begin(m_warnings), std::end(m_warnings), [&message](const std::pair<std::string, std::size_t>& item) {
+          return item.first == message;
+        });
+    if (std::end(m_warnings) == wIt) {
+      m_warnings.emplace(message, 1);
+      edm::LogWarning(m_category) << message << ": " << details
+                                  << (m_debug ? ""
+                                              : "\nNote: further warnings of this type will be suppressed (this can be "
+                                                "changed by enabling debugging printout)");
+    } else {
+      ++(wIt->second);
+      if (m_debug) {
+        edm::LogWarning(m_category) << message << ": " << details;
+      }
+    }
+  }
+
+  void printSummary() const {
+    if (!m_warnings.empty()) {
+      std::stringstream message;
+      message << m_category << " warnings:";
+      for (const auto& warnAndCount : m_warnings) {
+        message << std::endl << warnAndCount.first << " (" << warnAndCount.second << ")";
+      }
+      edm::LogWarning(m_category) << message.str();
+    }
+  }
+};
+
 class RectangularPixelTopology;
 class MagneticField;
 class PixelCPEBase : public PixelClusterParameterEstimator {
@@ -92,6 +132,7 @@ public:
     // filled in computeAnglesFrom....
     float trk_lp_x;
     float trk_lp_y;
+    float trk_momentum;
 
     // ggiurgiu@jhu.edu (12/01/2010) : Needed for calling topology methods
     // with track angles to handle surface deformations (bows/kinks)
@@ -263,6 +304,8 @@ protected:
   static constexpr float bothEdgeYError_ = 90.0f;
 
   static constexpr float clusterSplitMaxError_ = 7777.7f;
+
+  mutable PixelCPEWarningSummary warnings_;
 
   //---------------------------------------------------------------------------
   //  Geometrical services to subclasses.
