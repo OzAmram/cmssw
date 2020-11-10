@@ -364,7 +364,7 @@ void PixelCPEClusterRepair::callTempReco1D(DetParam const& theDetParam,
   //--- Check exit status
   if UNLIKELY (theClusterParam.ierr != 0) {
     if (theClusterParam.trk_momentum > 1.) {  //don't print warnings for very low momentum tracks
-      warnings_.add(fmt::format("PixelCPETemplateReco::localPosition() : Template reconstruction failed with error "
+      warnings_.add(fmt::format("PixelCPEClusterRepair::localPosition() : 1D Template reconstruction failed with error "
                                 "{0}. Applying simple reco as backup",
                                 theClusterParam.ierr),
                     fmt::format("Cotalpha {0} CotBeta {1} Template ID {2}. Det ID {3}",
