@@ -43,6 +43,7 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelTemplateDBObject.h"
 
 #include <unordered_map>
+#include "tbb/concurrent_unordered_map.h"
 
 #include <iostream>
 #ifdef EDM_ML_DEBUG
@@ -53,7 +54,7 @@ class PixelCPEWarningSummary {
 private:
   bool m_debug;
   std::string m_category;
-  std::map<std::string, std::size_t> m_warnings;
+  tbb::concurrent_unordered_map<std::string, std::atomic<std::size_t>> m_warnings;
 
 public:
   PixelCPEWarningSummary(const std::string& category, bool debug = false) : m_debug(debug), m_category(category) {}
