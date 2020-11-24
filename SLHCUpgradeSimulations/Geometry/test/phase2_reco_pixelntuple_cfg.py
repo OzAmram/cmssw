@@ -104,11 +104,11 @@ process.RandomNumberGeneratorService.restoreStateLabel=cms.untracked.string("ran
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T21', '')
 
-# CPE generic
+# Uncomment to use CPE generic instead of template in final fit
 #process.load("RecoTracker.TransientTrackingRecHit.TTRHBuilderWithTemplate_cfi")
 #process.TTRHBuilderAngleAndTemplate.PixelCPE = cms.string("PixelCPEGeneric")
 
-# CPE Template for everything
+# Uncomment CPE Template for every step (including seeding)
 #process.load("RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi")
 #process.siPixelRecHits.CPE = cms.string('PixelCPETemplateReco')
 #process.load("RecoTracker.TransientTrackingRecHit.TransientTrackingRecHitBuilder_cfi")
@@ -120,7 +120,6 @@ process.L1Reco_step = cms.Path(process.L1Reco)
 process.reconstruction_step = cms.Path(process.reconstruction)
 process.user_step = cms.Path(process.TrackRefitter * process.ReadLocalMeasurement * process.mcverticesanalyzer)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-#process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,process.user_step,process.endjob_step)

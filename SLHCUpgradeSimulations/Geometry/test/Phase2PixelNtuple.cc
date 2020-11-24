@@ -126,18 +126,17 @@ protected:
 private:
   edm::ParameterSet const conf_;
   TrackerHitAssociator::Config trackerHitAssociatorConfig_;
-  edm::EDGetTokenT<edmNew::DetSetVector<SiPixelRecHit>> pixelRecHits_token;
+  edm::EDGetTokenT<edmNew::DetSetVector<SiPixelRecHit>> pixelRecHits_token_;
   std::string ttrhBuilder_;
-  edm::EDGetTokenT<edm::View<reco::Track>> token_recoTracks;
-  edm::EDGetTokenT<TrajTrackAssociationCollection> TTAToken;
+  edm::EDGetTokenT<edm::View<reco::Track>> recoTracks_token_;
+  edm::EDGetTokenT<TrajTrackAssociationCollection> tta_token_;
 
   bool verbose_;
   bool picky_;
   static const int DGPERCLMAX = 100;
 
-  float trkPt, trkEta, trkTheta, trkPhi;
-  int trkIsHighPurity;
-  //float trkcota, trkcotb;
+  float trkPt_, trkEta_, trkTheta_, trkPhi_;
+  int trkIsHighPurity_;
 
   //--- Structures for ntupling:
   struct evt {
@@ -203,10 +202,10 @@ private:
 
 Phase2PixelNtuple::Phase2PixelNtuple(edm::ParameterSet const& conf)
     : trackerHitAssociatorConfig_(conf, consumesCollector()),
-      pixelRecHits_token(consumes<edmNew::DetSetVector<SiPixelRecHit>>(edm::InputTag("siPixelRecHits"))),
+      pixelRecHits_token_(consumes<edmNew::DetSetVector<SiPixelRecHit>>(edm::InputTag("siPixelRecHits"))),
       ttrhBuilder_(conf.getParameter<std::string>("ttrhBuilder")),  //ttrhBuilder_token def
-      token_recoTracks(consumes<edm::View<reco::Track>>(conf.getParameter<edm::InputTag>("trackProducer"))),
-      TTAToken(consumes<TrajTrackAssociationCollection>(conf.getParameter<InputTag>("trajectoryInput"))),
+      recoTracks_token_(consumes<edm::View<reco::Track>>(conf.getParameter<edm::InputTag>("trackProducer"))),
+      tta_token_(consumes<TrajTrackAssociationCollection>(conf.getParameter<InputTag>("trajectoryInput"))),
       verbose_(conf.getUntrackedParameter<bool>("verbose", false)),
       picky_(conf.getUntrackedParameter<bool>("picky", false)),
       pixeltree_(0),
@@ -319,17 +318,13 @@ void Phase2PixelNtuple::beginJob() {
   pixeltreeOnTrack_->Branch("cotAlphaFromDet", &recHit_.cotAlphaFromDet, "cotAlphaFromDet/F");
   pixeltreeOnTrack_->Branch("cotBetaFromDet", &recHit_.cotBetaFromDet, "cotBetaFromDet/F");
 
-  pixeltreeOnTrack_->Branch("trkPt", &trkPt);
-  pixeltreeOnTrack_->Branch("trkEta", &trkEta);
-  pixeltreeOnTrack_->Branch("trkTheta", &trkTheta);
-  pixeltreeOnTrack_->Branch("trkPhi", &trkPhi);
-  pixeltreeOnTrack_->Branch("trkIsHighPurity", &trkIsHighPurity);
+  pixeltreeOnTrack_->Branch("trkPt", &trkPt_);
+  pixeltreeOnTrack_->Branch("trkEta", &trkEta_);
+  pixeltreeOnTrack_->Branch("trkTheta", &trkTheta_);
+  pixeltreeOnTrack_->Branch("trkPhi", &trkPhi_);
+  pixeltreeOnTrack_->Branch("trkIsHighPurity", &trkIsHighPurity_);
   pixeltreeOnTrack_->Branch("cotAlphaFromTrack", &recHit_.cotAlphaFromTrack, "cotAlphaFromTrack/F");
   pixeltreeOnTrack_->Branch("cotBetaFromTrack", &recHit_.cotBetaFromTrack, "cotBetaFromTrack/F");
-  /*
-        pixeltreeOnTrack_->Branch("trkcota", &trkcota);
-        pixeltreeOnTrack_->Branch("trkcotb", &trkcotb);
-        */
 
   pixeltreeOnTrack_->Branch("DgN", &recHit_.fDgN, "DgN/I");
   pixeltreeOnTrack_->Branch("DgRow", recHit_.fDgRow, "DgRow[DgN]/I");
@@ -356,7 +351,7 @@ void Phase2PixelNtuple::analyze(const edm::Event& e, const edm::EventSetup& es) 
   const PSimHit* closest_simhit = nullptr;
 
   edm::Handle<SiPixelRecHitCollection> recHitColl;
-  e.getByToken(pixelRecHits_token, recHitColl);
+  e.getByToken(pixelRecHits_token_, recHitColl);
 
   // for finding matched simhit
   TrackerHitAssociator associate(e, trackerHitAssociatorConfig_);
@@ -461,11 +456,11 @@ void Phase2PixelNtuple::analyze(const edm::Event& e, const edm::EventSetup& es) 
 
   // Now loop over recotracks
   edm::Handle<View<reco::Track>> trackCollection;
-  e.getByToken(token_recoTracks, trackCollection);
+  e.getByToken(recoTracks_token_, trackCollection);
 
   // -- Track trajectory association map
   edm::Handle<TrajTrackAssociationCollection> hTTAC;
-  e.getByToken(TTAToken, hTTAC);
+  e.getByToken(tta_token_, hTTAC);
   TrajectoryStateCombiner tsoscomb;
 
   if (!trackCollection.isValid()) {
@@ -487,24 +482,19 @@ void Phase2PixelNtuple::analyze(const edm::Event& e, const edm::EventSetup& es) 
     int rT = 0;
     const TrajTrackAssociationCollection ttac = *(hTTAC.product());
     for (TrajTrackAssociationCollection::const_iterator it = ttac.begin(); it != ttac.end(); ++it) {
-      //printf("Track %i \n", rT);
       ++rT;
       const edm::Ref<std::vector<Trajectory>> refTraj = it->key;
       auto track = it->val;
-      //std::cout << "is high purity? " <<  track->quality(reco::TrackBase::highPurity) << std::endl;
-      trkIsHighPurity = track->quality(reco::TrackBase::highPurity);
-      trkPt = track->pt();
-      trkEta = track->eta();
-      trkTheta = track->theta();
-      trkPhi = track->phi();
+      trkIsHighPurity_ = track->quality(reco::TrackBase::highPurity);
+      trkPt_ = track->pt();
+      trkEta_ = track->eta();
+      trkTheta_ = track->theta();
+      trkPhi_ = track->phi();
 
       int iT = 0;
 #ifdef EDM_ML_DEBUG
       std::cout << " num of hits for track " << rT << " = " << track->recHitsSize() << std::endl;
 #endif
-      //TransientTrack tTrack = theB->build(*track);
-      //TrajectoryStateOnSurface initialTSOS = tTrack.innermostMeasurementState(); //defining initial TSOS
-      //printf("Initial TSOS angles. Cota %.3f Cotb %.3f \n", initialTSOS.localParameters().dxdz(), initialTSOS.localParameters().dydz());
 
       std::vector<TrajectoryMeasurement> tmeasColl = refTraj->measurements();
       for (auto const& tmeasIt : tmeasColl) {
@@ -519,7 +509,6 @@ void Phase2PixelNtuple::analyze(const edm::Event& e, const edm::EventSetup& es) 
           continue;
         if (!pixhit->isValid())
           continue;
-        //printf("Hit %i \n", iT);
         ++iT;
         TrajectoryStateOnSurface tsos = tsoscomb(tmeasIt.forwardPredictedState(), tmeasIt.backwardPredictedState());
         const DetId& detId = hit->geographicalId();
@@ -806,12 +795,10 @@ void Phase2PixelNtuple::fillPRecHit(const int detid_db,
     std::pair<float, float> local_angles = computeAnglesFromDetPosition(*Cluster, *topol, *theGeomDet);
     recHit_.cotAlphaFromDet = local_angles.first;
     recHit_.cotBetaFromDet = local_angles.second;
-    //printf("Det cota = %.3f, cotb = %.3f \n", recHit_.cotAlphaFromDet, recHit_.cotBetaFromDet);
 
     // compute local angles from track trajectory
     recHit_.cotAlphaFromTrack = tsos.localParameters().dxdz();
     recHit_.cotBetaFromTrack = tsos.localParameters().dydz();
-    //printf("Track cota = %.3f, cotb = %.3f \n", recHit_.cotAlphaFromTrack, recHit_.cotBetaFromTrack);
 
     // -- Get digis of this cluster
     const std::vector<SiPixelCluster::Pixel>& pixvector = Cluster->pixels();
