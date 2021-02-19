@@ -2,6 +2,7 @@ import six
 from Configuration.StandardSequences.CondDBESSource_cff import GlobalTag as essource
 connectionString = essource.connect.value()
 
+
 SiPixelLARecord           =   "SiPixelLorentzAngleRcd"                  
 SiPixelSimLARecord        =   "SiPixelLorentzAngleSimRcd"   
 SiPixelGenErrorRecord     =   "SiPixelGenErrorDBObjectRcd"       
@@ -55,12 +56,14 @@ allTags["GenError"] = {
     'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_IT_v6.1.5_25x100_v3_mc',SiPixelGenErrorRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T21' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_IT_v6.1.5_25x100_v3_mc',SiPixelGenErrorRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T22' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_IT_v6.1.5_50x50_v5_mc' ,SiPixelGenErrorRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 50um (local-x) x 50um (local-y) , VBias=350V
+    'T23' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_IT_v7.0.0_25x100_v1_mc' ,SiPixelGenErrorRecord,connectionString, "", "2021-02-19 22:00:00"] ), ),  # Mix of 3D and planar sensors, both are 25um (local-x) x 100 um (local-y), planar sensors are VBias = 350, 3d sensors are VBias = 30V, B = 0
 }
 
 allTags["Template"] = {
     'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_IT_v6.1.5_25x100_v3_mc',SiPixelTemplatesRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T21' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_IT_v6.1.5_25x100_v3_mc',SiPixelTemplatesRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 25um (local-x) x 100um (local-y) , VBias=350V
     'T22' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_IT_v6.1.5_50x50_v5_mc' ,SiPixelTemplatesRecord,connectionString, "", "2021-01-27 10:00:00"] ), ),  # cell is 50um (local-x) x 50um (local-y) , VBias=350V
+    'T23' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_IT_v7.0.0_25x100_v1_mc' ,SiPixelTemplatesRecord,connectionString, "", "2021-02-19 22:00:00"] ), ),  # Mix of 3D and planar sensors, both are 25um (local-x) x 100 um (local-y), planar sensors are VBias = 350, 3d sensors are VBias = 30V, B = 0
 }
 
 ##

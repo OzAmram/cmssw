@@ -1114,8 +1114,7 @@ upgradeProperties[2026] = {
     '2026D65' : {
         'Geom' : 'Extended2026D65',             # N.B.: Geometry with 3D pixels in the Inner Tracker.
         'HLTmenu': '@fake2',
-        'GT' : 'auto:phase2_realistic_T23',     # This symbolic GT has no pixel template / GenError informations.
-        'ProcessModifier': 'PixelCPEGeneric',   # This swaps template reco CPE for generic reco CPE
+        'GT' : 'auto:phase2_realistic_T23',     # This symbolic GT has both planar and 3d Templates / GenErrors
         'Era' : 'Phase2C11T23',           # customizes for 3D Pixels
         'ScenToRun' : ['GenSimHLBeamSpot','DigiTrigger','RecoGlobal', 'HARVESTGlobal'],
     },

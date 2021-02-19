@@ -24,8 +24,7 @@ phase2_tracker.toModify(PixelCPEGenericESProducer,
 # Will remove any usage of template / genError payloads from the reconstruction
 from Configuration.Eras.Modifier_phase2_3DPixels_cff import phase2_3DPixels
 (phase2_tracker & phase2_3DPixels).toModify(PixelCPEGenericESProducer,
-                                            UseErrorsFromTemplates = False,    # no GenErrors
-                                            LoadTemplatesFromDB = False,       # do not load templates
+                                            NoTemplateErrorsWhenNoTrkAngles = False # use genErrors in the seeding step (when no track angles are available)
                                             )
 
 # customize the Pixel CPE generic producer for phase2 square pixels
