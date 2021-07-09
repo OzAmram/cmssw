@@ -550,63 +550,42 @@ void PixelCPEClusterRepair::checkRecommend2D(DetParam const& theDetParam,
     theClusterParam.recommended2D_ = true;
     return;
   }
-  // The 1d pixel template
-  SiPixelTemplate templ(thePixelTemp_);
-  if (!templ.interpolate(ID, theClusterParam.cotalpha, theClusterParam.cotbeta, theDetParam.bz, theDetParam.bx)) {
-    //error setting up template, return false
-    theClusterParam.recommended2D_ = false;
-    return;
+  
+  // Obtain boundaries in index units
+  int ymin = theClusterParam.theCluster->minPixelCol();
+  int ymax = theClusterParam.theCluster->maxPixelCol();
+
+  //make 1d projection of cluster
+  int proj[100];
+  memset(proj, 0., sizeof(proj));
+  for(int i=0; i<theClusterParam.theCluster->size(); i++){
+
+      auto pixel = theClusterParam.theCluster->pixel(i);
+      if(pixel.y - ymin >= 0 && pixel.y - ymin < 100){
+        proj[pixel.y - ymin] += pixel.adc;
+      }
   }
-
-  //length of the cluster taking into account double sized pixels
-  float nypix = clusterPayload.mcol;
-  for (int i = 0; i < clusterPayload.mcol; i++) {
-    if (clusterPayload.ydouble[i])
-      nypix += 1.;
+  int nCols = ymax - ymin + 1;
+  int counter = 0;
+  //
+  //check for a gap in the cluster
+  for(counter=0; counter<nCols && counter < 100; counter++){
+      if(proj[counter] <= 0) break;
   }
-
-  // templ.clsleny() is the expected length of the cluster along y axis.
-  // templ.qavg() is the expected total charge of the cluster
-  // theClusterParam.theCluster->charge() is the total charge of this cluster
-  float nydiff = templ.clsleny() - nypix;
-  float qratio = theClusterParam.theCluster->charge() / templ.qavg();
-
-  if (nydiff > maxSizeMismatchInY_ && qratio < minChargeRatio_) {
-    // If the cluster is shorter than expected and has less charge, likely
-    // due to truncated cluster, try 2D reco
+  if(counter != nCols && nCols < 20){
 
     theClusterParam.recommended2D_ = true;
     theClusterParam.hasBadPixels_ = true;
+    theClusterParam.edgeTypeY_ = 0;
 
     // if not RunDamagedClusters flag, don't try to fix any clusters
     if (!runDamagedClusters_) {
       theClusterParam.recommended2D_ = false;
     }
 
-    // Figure out what edge flags to set for truncated cluster
-    // Truncated clusters usually come from dead double columns
-    //
-    // If cluster is of even length,  either both of or neither of beginning and ending
-    // edge are on a double column, so we cannot figure out the likely edge of
-    // truncation, let the 2D algorithm try extending on both sides (option 3)
-    if (theClusterParam.theCluster->sizeY() % 2 == 0)
-      theClusterParam.edgeTypeY_ = 3;
-    else {
-      //If the cluster is of odd length, only one of the edges can end on
-      //a double column, this is the likely edge of truncation
-      //Double columns always start on even indexes
-      int min_col = theClusterParam.theCluster->minPixelCol();
-      if (min_col % 2 == 0) {
-        //begining edge is at a double column (end edge cannot be,
-        //because odd length) so likely truncated at small y (option 1)
-        theClusterParam.edgeTypeY_ = 1;
-      } else {
-        //end edge is at a double column (beginning edge cannot be,
-        //because odd length) so likely truncated at large y (option 2)
-        theClusterParam.edgeTypeY_ = 2;
-      }
-    }
   }
+  return;
+
 }
 
 //------------------------------------------------------------------

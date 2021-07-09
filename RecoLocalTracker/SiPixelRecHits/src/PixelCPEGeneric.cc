@@ -204,6 +204,34 @@ LocalPoint PixelCPEGeneric::localPosition(DetParam const& theDetParam, ClusterPa
   int q_l_Y;  //!< Q of the last   pixel  in Y
   collect_edge_charges(theClusterParam, q_f_X, q_l_X, q_f_Y, q_l_Y, useErrorsFromTemplates_ && truncatePixelCharge_);
 
+  int ymin = theClusterParam.theCluster->minPixelCol();
+  int ymax = theClusterParam.theCluster->maxPixelCol();
+
+  //check for gaps in cluster
+  //make 1d projection of cluster
+  int proj[100];
+  memset(proj, 0., sizeof(proj));
+  for(int i=0; i<theClusterParam.theCluster->size(); i++){
+
+      auto pixel = theClusterParam.theCluster->pixel(i);
+      if(pixel.y - ymin >= 0 && pixel.y - ymin < 100){
+        proj[pixel.y - ymin] += pixel.adc;
+      }
+  }
+  int nCols = ymax - ymin + 1;
+  int counter = 0;
+  //
+  //check for a gap in the cluster
+  for(counter=0; counter<nCols && counter < 100; counter++){
+      if(proj[counter] <= 0) break;
+  }
+  if(counter != nCols && nCols < 20){
+    theClusterParam.hasBadPixels_ = true;
+  }
+
+
+
+
   //--- Find the inner widths along X and Y in one shot.  We
   //--- compute the upper right corner of the inner pixels
   //--- (== lower left corner of upper right pixel) and
