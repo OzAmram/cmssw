@@ -25,7 +25,7 @@ run3_common.toModify(siPixelClusters,
   VCaltoElectronGain_L1   = 1,   
   VCaltoElectronOffset    = 0,   
   VCaltoElectronOffset_L1 = 0 ,
-  #src = cms.InputTag('siPixelDigisMorphed')
+  src = cms.InputTag('siPixelDigisMorphed')
 )
 
 
