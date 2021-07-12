@@ -18,7 +18,7 @@ public:
 
   explicit PixelDigi(PackedDigiType packed_value) : theData(packed_value) {}
 
-  PixelDigi(int row, int col, int adc, int flag) { init(row, col, adc, flag); }
+  PixelDigi(int row, int col, int adc, int flag = 0) { init(row, col, adc, flag); }
 
   PixelDigi(int chan, int adc) {
     std::pair<int, int> rc = channelToPixel(chan);

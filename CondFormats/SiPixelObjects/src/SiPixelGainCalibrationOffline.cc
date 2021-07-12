@@ -171,7 +171,8 @@ float SiPixelGainCalibrationOffline::getPed(
   int maxRow = lengthOfColumnData - (lengthOfColumnData % numberOfRowsToAverageOver_) - 1;
   if (col >= nCols || row > maxRow) {
     throw cms::Exception("CorruptedData")
-        << "[SiPixelGainCalibrationOffline::getPed] Pixel out of range: col " << col << " row " << row;
+        << "[SiPixelGainCalibration::getPed] Pixel out of range: col " << col << " row " << row
+        << "maxcol " << nCols << "maxrow " << maxRow;
   }
 
   if (datum == deadFlag_)
@@ -206,7 +207,8 @@ float SiPixelGainCalibrationOffline::getGain(const int& col,
   int maxRow = lengthOfColumnData - (lengthOfColumnData % numberOfRowsToAverageOver_) - 1;
   if (col >= nCols || row > maxRow) {
     throw cms::Exception("CorruptedData")
-        << "[SiPixelGainCalibrationOffline::getPed] Pixel out of range: col " << col << " row " << row;
+        << "[SiPixelGainCalibration::getPed] Pixel out of range: col " << col << " row " << row
+        << "maxcol " << nCols << "maxrow " << maxRow;
   }
 
   return decodeGain(datum);
