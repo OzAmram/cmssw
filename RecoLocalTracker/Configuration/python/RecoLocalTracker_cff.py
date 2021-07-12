@@ -16,7 +16,6 @@ pixeltrackerlocalrecoTask = cms.Task(
     siPixelClustersPreSplittingTask,
     siPixelRecHitsPreSplittingTask)
 
-pixeltrackerlocalrecoTask_withMorphing = cms.Task(siPixelDigisMorphed, siPixelClustersPreSplitting, siPixelRecHitsPreSplitting)
 
 striptrackerlocalrecoTask = cms.Task(
     siStripZeroSuppression,
@@ -27,6 +26,11 @@ trackerlocalrecoTask = cms.Task(
     pixeltrackerlocalrecoTask,
     striptrackerlocalrecoTask,
     clusterSummaryProducer)
+
+pixeltrackerlocalrecoTask_withMorphing = cms.Task(siPixelDigisMorphed, siPixelClustersPreSplitting, siPixelRecHitsPreSplitting)
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toReplaceWith(pixeltrackerlocalrecoTask, pixeltrackerlocalrecoTask_withMorphing)
+
 
 pixeltrackerlocalreco = cms.Sequence(pixeltrackerlocalrecoTask)
 striptrackerlocalreco = cms.Sequence(striptrackerlocalrecoTask)
@@ -41,5 +45,3 @@ _pixeltrackerlocalrecoTask_phase2.add(siPhase2Clusters)
 phase2_tracker.toReplaceWith(pixeltrackerlocalrecoTask, _pixeltrackerlocalrecoTask_phase2)
 phase2_tracker.toReplaceWith(trackerlocalrecoTask, trackerlocalrecoTask.copyAndExclude([striptrackerlocalrecoTask]))
 
-from Configuration.Eras.Modifier_run3_common_cff import run3_common
-run3_common.toReplaceWith(pixeltrackerlocalrecoTask, pixeltrackerlocalrecoTask_withMorphing)
