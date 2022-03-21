@@ -274,6 +274,7 @@ protected:
   //  Cluster-level services.
   //---------------------------------------------------------------------------
 
+  bool checkIsHealed(const ClusterParam& theClusterParam) const;
   DetParam const& detParam(const GeomDetUnit& det) const;
 
   using DetParams = std::vector<DetParam>;

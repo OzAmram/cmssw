@@ -417,6 +417,33 @@ LocalVector PixelCPEBase::driftDirection(DetParam& theDetParam, LocalVector Bfie
   return dd;
 }
 
+bool PixelCPEBase::checkIsHealed(const ClusterParam& theClusterParam) const{
+ // Obtain boundaries in index units
+  int ymin = theClusterParam.theCluster->minPixelCol();
+  int ymax = theClusterParam.theCluster->maxPixelCol();
+
+  constexpr int max_size = 20;
+
+  int proj[20];
+
+  memset(proj, 0, sizeof(proj));
+  //make 1d projection of the cluster
+  for(int i=0; i<theClusterParam.theCluster->size(); i++){
+      auto pixel = theClusterParam.theCluster->pixel(i);
+      if(pixel.y - ymin >= 0 && pixel.y - ymin < max_size){
+        proj[pixel.y - ymin] = 1;
+      }
+  }
+  int nCols = ymax - ymin + 1;
+  int counter = 0;
+  //check if reach a gap before the cluster end
+  for(counter=0; counter<nCols && counter < max_size; counter++){
+      if(proj[counter] == 0) break;
+  }
+  return counter != nCols;
+}
+
+
 //-----------------------------------------------------------------------------
 //  One-shot computation of the driftDirection and both lorentz shifts
 //-----------------------------------------------------------------------------

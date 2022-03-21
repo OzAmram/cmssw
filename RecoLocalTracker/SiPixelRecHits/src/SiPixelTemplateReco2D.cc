@@ -1,5 +1,5 @@
 //
-//  SiPixelTemplateReco2D.cc (Version 2.90)
+//  SiPixelTemplateReco2D.cc (Version 3.50)
 //  Updated to work with the 2D template generation code
 //  Include all bells and whistles for edge clusters
 //  2.10 - Add y-lorentz drift to estimate starting point [for FPix]
@@ -14,6 +14,10 @@
 //  2.70 - Change convergence criterion to require it in both planes [it was either]
 //  2.80 - Change 3D to 2D
 //  2.90 - Fix divide by zero for separate 1D convergence branch
+//  2.91 - Remove charge correction factor
+//  3.00 - Use expected half y length to estimate y0 when possible [improves irradiated clusters]
+//  3.50 - Use expected half y length to estimate y0 when cluster length does not match expected size
+//  3.51 - Fix logic for half length use to allow for non-contiguous clusters
 //
 //
 //
@@ -109,7 +113,8 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
 
   const int nilist = 9, njlist = 5;
   const float ilist[nilist] = {0.f, -1.f, -0.75f, -0.5f, -0.25f, 0.25f, 0.5f, 0.75f, 1.f};
-  const float jlist[njlist] = {0.f, -0.5f, -0.25f, 0.25f, 0.50f};
+  const float jlist[njlist] = {0.f, -0.5f, -0.25f, 0.25f, 0.5f};
+  //   const float jlist[njlist] = {0.f, -1.0f, -0.50f, 0.5f, 1.0f};
 
   // Extract some relevant info from the 2D template
 
@@ -129,6 +134,9 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
   float q50 = templ2D.s50();
   float pseudopix = 0.2f * q50;
   float pseudopix2 = q50 * q50;
+
+  // halfylen is the signed half length of the cluster from the track angle
+  float halfylen = fabs(cotbeta) * templ2D.zsize() / 2.;
 
   // Get charge scaling factor
 
@@ -200,7 +208,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
   float pixel[NPIXMAX];
   float sigma2[NPIXMAX];
   float minmax = templ2D.pixmax();
-  float ylow0 = 0.f, yhigh0 = 0.f, xlow0 = 0.f, xhigh0 = 0.f;
+  float ylow0 = 0.f, yhigh0 = 0.f;
   int npixel = 0;
   float ysum[BYM2], ye[BYM2 + 1], ypos[BYM2], xpos[BXM2], xe[BXM2 + 1];
   bool yd[BYM2], xd[BXM2];
@@ -248,6 +256,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
     xpos[j] = xe[j] + xpitch / 2.;
   }
   // Shift the cluster center to the central pixel of the array, truncate big signals
+  float qxtot = 0.f, xavg = 0.f;
   for (int i = 0; i < nclusy; ++i) {
     int iy = i + shifty;
     float maxpix = minmax;
@@ -258,6 +267,10 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
       for (int j = 0; j < nclusx; ++j) {
         int jx = j + shiftx;
         if (jx > -1 && jx < BXM2) {
+          if (cluster(j, i) > 0.f) {
+            qxtot += cluster(j, i);
+            xavg += xpos[jx] * cluster(j, i);
+          }
           if (cluster(j, i) > maxpix) {
             clusxy[jx][iy] = maxpix;
           } else {
@@ -275,6 +288,11 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
     }
   }
 
+  // Find the mean x
+  if (qxtot > 0.f) {
+    xavg /= qxtot;
+  }
+
   // Make sure that we find at least one pixel
   if (npixel < 1) {
 #ifndef SI_PIXEL_TEMPLATE_STANDALONE
@@ -287,8 +305,8 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
   }
 
   // Get the shifted coordinates of the cluster ends
-  xlow0 = xe[jmin];
-  xhigh0 = xe[jmax + 1];
+  //float xlow0 = xe[jmin];
+  //float xhigh0 = xe[jmax + 1];
   ylow0 = ye[imin];
   yhigh0 = ye[imax + 1];
 
@@ -326,14 +344,14 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
 
   float templeny = templ2D.clsleny();
   deltay = templeny - (yhigh - ylow) / ysize;
+  float dylenpix = (yhigh - ylow - 2 * halfylen) / ysize;
 
   //  x0 and y0 are best guess seeds for the fit
 
-  float x0 = 0.5f * (xlow0 + xhigh0) - templ2D.lorxdrift();
-  float y0 = 0.5f * (ylow + yhigh) - templ2D.lorydrift();
-  //   float y1 = yhigh - halfy - templ2D.lorydrift();
-  //   printf("y0 = %f, y1 = %f \n", y0, y1);
-  //   float y0 = 0.5f*(ylow + yhigh);
+  //   float x0 = 0.5f*(xlow0 + xhigh0) - templ2D.lorxdrift();
+  //   float y0 = 0.5f*(ylow + yhigh) - templ2D.lorydrift();
+  float x0 = xavg - templ2D.lorxdrift();
+  float y0;
 
   // If there are missing edge columns, set up missing column flags and number
   // of minimization passes
@@ -404,6 +422,20 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
       }
     }
 
+    // base y first guess only on "good" edge if available
+
+    if (fabs(dylenpix) < 0.8f) {
+      y0 = 0.5f * (ylow + yhigh) - templ2D.lorydrift();
+    } else {
+      if (cotbeta > 0. && imisshigh != (imin - 1)) {
+        y0 = ylow + halfylen - templ2D.lorydrift();
+      } else if (cotbeta < 0. && imisslow != (imax + 1)) {
+        y0 = yhigh - halfylen - templ2D.lorydrift();
+      } else {
+        y0 = 0.5f * (ylow + yhigh) - templ2D.lorydrift();
+      }
+    }
+
     // Next, add pseudo pixels around the periphery of the cluster
 
     tpixel = npixel;
@@ -461,6 +493,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
           }
         }
       }
+
       // Don't add them if this is a dead column
       if ((i - 1) != imisshigh) {
         if ((j - 1) != jmisshigh) {
@@ -499,7 +532,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
     chi2min[ipass] = 1000000.f;
     float chi2, qtemplate, qactive, qtfrac = 0.f, x2D = 0.f, y2D = 0.f;
     //  Scale the y search grid for long clusters [longer than 7 pixels]
-    float ygridscale = 0.271 * cotbeta;
+    float ygridscale = 0.271 * fabs(cotbeta);
     if (ygridscale < 1.f)
       ygridscale = 1.f;
     for (int is = 0; is < nilist; ++is) {
@@ -537,7 +570,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
     float xstep = 1.0f, ystep = 1.0f;
     float minv11 = 1000.f, minv12 = 1000.f, minv22 = 1000.f;
     chi2 = chi2min[ipass];
-    while (chi2 <= chi2min[ipass] && niter < 15 && (niter < 2 || (std::abs(xstep) > 0.2 || std::abs(ystep) > 0.2))) {
+    while (chi2 <= chi2min[ipass] && niter < 15 && (niter < 2 || (fabs(xstep) > 0.2 || fabs(ystep) > 0.2))) {
       // Remember the present parameters
       x2D0[ipass] = x2D;
       y2D0[ipass] = y2D;
@@ -586,7 +619,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
 
       // If the matrix is non-singular invert and solve
 
-      if (std::abs(D) > 1.e-3) {
+      if (fabs(D) > 1.e-3) {
         minv11 = sumdtdt22 / D;
         minv12 = -sumdtdt12 / D;
         minv22 = sumdtdt11 / D;
@@ -600,12 +633,13 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
 
       } else {
         //  Assume alternately that ystep = 0 and then xstep = 0
-        if (sumdtdt11 > 0.0001f) {
+
+        if (fabs(sumdtdt11) > 0.0001f) {
           xstep = sumptdt1 / sumdtdt11;
         } else {
           xstep = 0.f;
         }
-        if (sumdtdt22 > 0.0001f) {
+        if (fabs(sumdtdt22) > 0.0001f) {
           ystep = sumptdt2 / sumdtdt22;
         } else {
           ystep = 0.f;
@@ -613,7 +647,7 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
       }
       xstep *= 0.9f;
       ystep *= 0.9f;
-      if (std::abs(xstep) > 2. * xsize || std::abs(ystep) > 2. * ysize)
+      if (fabs(xstep) > 2. * xsize || fabs(ystep) > 2. * ysize)
         break;
       x2D += xstep;
       y2D += ystep;
@@ -622,6 +656,20 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
   }
 
   ipass = 0;
+  //   if(npass == 1) {
+  // one pass, require that it have iterated
+  //      if(niter0[0] == 0) {return 2;}
+  //   } else {
+  // two passes
+  //      if(niter0[0] == 0 && niter0[1] == 0) {return 2;}
+  //      if(niter0[0] > 0 && niter0[1] > 0) {
+  // if both have iterated, take the smaller chi2
+  //         if(chi2min[1] < chi2min[0]) {ipass = 1;}
+  //      } else {
+  // if one has iterated, take it
+  //         if(niter0[1] > 0) {ipass = 1;}
+  //      }
+  //   }
 
   if (npass > 1) {
     // two passes, take smaller chisqared
@@ -661,6 +709,8 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
   float offsetx = templ2D.offsetx(qbin);
   float offsety = templ2D.offsety(qbin);
 
+  //offsetx = offsety = 0;
+
   // This 2D code has the origin (0,0) at the lower left edge of the input cluster
   // That is now pixel [shiftx,shifty] and the template reco convention is the middle
   // of that pixel, so we need to correct
@@ -695,7 +745,8 @@ int SiPixelTemplateReco2D::PixelTempReco2D(int id,
     float mpv = templ2D.mpvvav();
     float sigmaQ = templ2D.sigmavav();
     float kappa = templ2D.kappavav();
-    float xvav = (qtotal / qtfrac0[ipass] - mpv) / sigmaQ;
+    //      float xvav = (qtotal/qtfrac0[ipass]-mpv)/sigmaQ;
+    float xvav = (qtotal - mpv) / sigmaQ;
     float beta2 = 1.f;
     //  VVIObj is a private port of CERNLIB VVIDIS
     VVIObjF vvidist(kappa, beta2, 1);
