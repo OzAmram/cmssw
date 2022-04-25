@@ -60,6 +60,8 @@ ClusterShapeHitFilterESProducer::ClusterShapeHitFilterESProducer(const edm::Para
 
   edm::LogInfo("ClusterShapeHitFilterESProducer") << " with name: " << componentName;
 
+  std::cout << "doPixelShapeCut " << cutOnPixelShape_ << std::endl;
+
   auto cc = setWhatProduced(this, componentName);
   fieldToken_ = cc.consumes();
   geoToken_ = cc.consumes();

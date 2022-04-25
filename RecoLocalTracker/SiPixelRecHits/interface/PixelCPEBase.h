@@ -23,6 +23,7 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelGenErrorDBObject.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelLorentzAngle.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelTemplateDBObject.h"
+#include "CondFormats/SiPixelTransient/interface/SiPixelUtils.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementError.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementPoint.h"
 #include "DataFormats/GeometrySurface/interface/GloballyPositioned.h"
@@ -274,7 +275,6 @@ protected:
   //  Cluster-level services.
   //---------------------------------------------------------------------------
 
-  bool checkIsHealed(const ClusterParam& theClusterParam) const;
   DetParam const& detParam(const GeomDetUnit& det) const;
 
   using DetParams = std::vector<DetParam>;

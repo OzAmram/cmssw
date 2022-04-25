@@ -1,5 +1,6 @@
 #ifndef SI_PIXEL_TEMPLATE_STANDALONE
 #include "CondFormats/SiPixelTransient/interface/SiPixelUtils.h"
+#include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
 #else
 #include "SiPixelUtils.h"
 #endif
@@ -147,4 +148,32 @@ namespace SiPixelUtils {
 
     return hit_pos;
   }
+
+    bool isHealed(const SiPixelCluster& clus){
+    //Check if cluster has gap in the middle
+
+      int ymin = clus.minPixelCol();
+      int ymax = clus.maxPixelCol();
+
+      constexpr int max_size = 30;
+
+      int proj[30];
+
+      memset(proj, 0, sizeof(proj));
+      //make 1d projection of the cluster
+      for(int i=0; i<clus.size(); i++){
+          auto pixel = clus.pixel(i);
+          if(pixel.adc > 0 && ((pixel.y - ymin) >= 0) && ((pixel.y - ymin) < max_size)){
+            proj[pixel.y - ymin] = 1;
+          }
+      }
+      int nCols = ymax - ymin + 1;
+      int counter = 0;
+      //check if reach a gap before the cluster end
+      for(counter=0; counter<nCols && counter < max_size; counter++){
+          if(proj[counter] == 0) break;
+      }
+      return counter != nCols;
+    }
+
 }  // namespace SiPixelUtils

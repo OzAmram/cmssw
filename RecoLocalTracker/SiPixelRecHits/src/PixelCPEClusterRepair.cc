@@ -558,7 +558,7 @@ void PixelCPEClusterRepair::checkRecommend2D(DetParam const& theDetParam,
     return;
   }
 
-  if(checkIsHealed(theClusterParam)){
+  if(SiPixelUtils::isHealed(*theClusterParam.theCluster)){
     //the cluster has been 'healed' (has a gap in it), so run the 2d reco
 
     

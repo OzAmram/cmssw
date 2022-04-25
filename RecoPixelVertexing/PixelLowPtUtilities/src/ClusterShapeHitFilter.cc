@@ -25,6 +25,7 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelLorentzAngle.h"
 
 #include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
+#include "CondFormats/SiPixelTransient/interface/SiPixelUtils.h"
 
 #include <fstream>
 #include <cassert>
@@ -287,11 +288,15 @@ bool ClusterShapeHitFilter::isCompatible(const SiPixelRecHit& recHit,
                                          const LocalVector& ldir,
                                          const SiPixelClusterShapeCache& clusterShapeCache,
                                          PixelData const* ipd) const {
+  //skip shape filter for 'healed' clusters (have a gap in them)
+  if(SiPixelUtils::isHealed(*(recHit.cluster())))
+    return true;
   // Get detector
   if (cutOnPixelCharge_ && (!checkClusterCharge(recHit.geographicalId(), *(recHit.cluster()), ldir)))
     return false;
   if (!cutOnPixelShape_)
     return true;
+
 
   const PixelData& pd = getpd(recHit, ipd);
 

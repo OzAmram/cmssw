@@ -7,8 +7,6 @@
 // Pixel templates contain the rec hit error parameterizaiton
 #include "CondFormats/SiPixelTransient/interface/SiPixelTemplate.h"
 
-// The generic formula
-#include "CondFormats/SiPixelTransient/interface/SiPixelUtils.h"
 
 // Services
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -201,7 +199,7 @@ LocalPoint PixelCPEGeneric::localPosition(DetParam const& theDetParam, ClusterPa
   int q_l_Y;  //!< Q of the last   pixel  in Y
   collect_edge_charges(theClusterParam, q_f_X, q_l_X, q_f_Y, q_l_Y, useErrorsFromTemplates_ && truncatePixelCharge_);
 
-  theClusterParam.hasBadPixels_ = checkIsHealed(theClusterParam);
+  theClusterParam.hasBadPixels_ = SiPixelUtils::isHealed(*theClusterParam.theCluster);
 
   //--- Find the inner widths along X and Y in one shot.  We
   //--- compute the upper right corner of the inner pixels
@@ -301,6 +299,7 @@ LocalPoint PixelCPEGeneric::localPosition(DetParam const& theDetParam, ClusterPa
 
   // Apply irradiation corrections
   if (IrradiationBiasCorrection_) {
+  //if (IrradiationBiasCorrection_ && !theClusterParam.hasBadPixels_) {
     if (theClusterParam.theCluster->sizeX() == 1) {  // size=1
       // ggiurgiu@jhu.edu, 02/03/09 : for size = 1, the Lorentz shift is already accounted by the irradiation correction
       //float tmp1 =  (0.5 * theDetParam.lorentzShiftInCmX);
@@ -429,6 +428,11 @@ LocalError PixelCPEGeneric::localError(DetParam const& theDetParam, ClusterParam
   if (theClusterParam.qBin_ == 0)
     LogDebug("PixelCPEGeneric") << " qbin 0 " << xerr << " " << yerr;
 
+  //if(theClusterParam.hasBadPixels_){
+
+      //yerr *= 10.0;
+      //printf("Inflating err \n");
+  //}
   auto xerr_sq = xerr * xerr;
   auto yerr_sq = yerr * yerr;
 

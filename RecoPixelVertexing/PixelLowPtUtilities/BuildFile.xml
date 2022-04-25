@@ -1,6 +1,7 @@
 <use name="CondFormats/DataRecord"/>
 <use name="CondFormats/SiPixelObjects"/>
 <use name="CondFormats/SiStripObjects"/>
+<use name="CondFormats/SiPixelTransient"/>
 <use name="DataFormats/TrackerCommon"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/ParameterSet"/>

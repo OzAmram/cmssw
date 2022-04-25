@@ -1,4 +1,6 @@
 #ifndef CondFormatsSiPixelTransientSiPixelUtils_h
+#include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
+#include <cstring>
 #define CondFormatsSiPixelTransientSiPixelUtils_h 1
 
 namespace SiPixelUtils {
@@ -37,6 +39,8 @@ namespace SiPixelUtils {
       float eff_charge_cut_high,   //!< Use edge if < W_eff (in pix) &&&
       float size_cut               //!< Use edge when size == cuts
   );
+
+  bool isHealed(const SiPixelCluster& clus);
 }  // namespace SiPixelUtils
 
 #endif
